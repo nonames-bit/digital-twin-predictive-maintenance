@@ -5,13 +5,13 @@ import numpy as np
 # Definición de columnas estándar para C-MAPSS
 COLS = ["engine_id", "cycle", "setting1", "setting2", "setting3"] + [f"s{i}" for i in range(1, 22)]
 
-def load(data_dir, rul_cap=125):
-    # 1. Definimos la ruta de train_FD001.txt
-    file_path = os.path.join(data_dir, 'train_FD001.txt')
+def load(data_dir, rul_cap=125, subset='FD001', split='train'):
+    # 1. Definimos la ruta del archivo de datos (train o test)
+    file_path = os.path.join(data_dir, f'{split}_{subset}.txt')
     
-    # Leemos el archivo. sep='\s+' maneja los espacios variables.
+    # Leemos el archivo. sep=r'\s+' maneja los espacios variables.
     # header=None porque no tiene nombres de columna nativos.
-    df = pd.read_csv(file_path, sep='\s+', header=None)
+    df = pd.read_csv(file_path, sep=r'\s+', header=None)
     
     # 2. Tomamos solo las primeras 26 columnas para evitar columnas fantasma y asignamos nombres
     df = df.iloc[:, :len(COLS)]
@@ -20,8 +20,16 @@ def load(data_dir, rul_cap=125):
     # 3. Calculamos el RUL (Remaining Useful Life) con tope (rul_cap)
     # max_cycle para cada motor
     df['max_cycle'] = df.groupby('engine_id')['cycle'].transform('max')
-    # El RUL real es max_cycle - ciclo actual
-    df['rul'] = df['max_cycle'] - df['cycle']
+    if split == 'train':
+        # El RUL real es max_cycle - ciclo actual
+        df['rul'] = df['max_cycle'] - df['cycle']
+    elif split == 'test':
+        rul_path = os.path.join(data_dir, f'RUL_{subset}.txt')
+        rul_end = pd.read_csv(rul_path, sep=r'\s+', header=None).iloc[:, 0]
+        rul_map = {engine_id: rul_val for engine_id, rul_val in enumerate(rul_end, start=1)}
+        df['rul'] = (df['max_cycle'] - df['cycle']) + df['engine_id'].map(rul_map)
+    else:
+        raise ValueError(f"split no soportado: {split}. Usa 'train' o 'test'.")
     # Aplicamos el límite
     df['rul'] = df['rul'].clip(upper=rul_cap)
     
@@ -36,11 +44,11 @@ def load(data_dir, rul_cap=125):
     canonical_df['asset_id'] = df['engine_id'].astype(str)
     
     # Nombre estático del dataset
-    canonical_df['dataset'] = 'cmapss_fd001'
+    canonical_df['dataset'] = f'cmapss_{subset.lower()}'
     
-    # Agrupamos las características s1..s21 en una sola columna como diccionarios
-    sensor_cols = [f"s{i}" for i in range(1, 22)]
-    canonical_df['features'] = df[sensor_cols].to_dict(orient='records')
+    # Agrupamos las características operativas (setting1..3) y sensores (s1..s21) en una sola columna como diccionarios
+    feature_cols = ["setting1", "setting2", "setting3"] + [f"s{i}" for i in range(1, 22)]
+    canonical_df['features'] = df[feature_cols].to_dict(orient='records')
     
     # Guardamos el target final
     canonical_df['target'] = df['rul']
