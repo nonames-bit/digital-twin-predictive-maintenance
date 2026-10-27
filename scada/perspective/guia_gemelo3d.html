@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Laboratorio Interactivo: Despiece 3D, MCP y Named Queries en Perspective</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body, html {
+      width: 100%; height: 100%; overflow: hidden;
+      background: #090e1a;
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+      color: #f8fafc;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 52% 48%;
+      width: 100%; height: 100%;
+    }
+    /* Lado Izquierdo: Visor 3D con Despiece Mecánico (Exploded View) */
+    #viewport3d {
+      position: relative;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at 50% 45%, #172542 0%, #090e1a 100%);
+      border-right: 1px solid #334155;
+    }
+    .toolbar3d {
+      position: absolute; top: 10px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 10; pointer-events: none;
+    }
+    .badge3d {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid #38bdf8;
+      padding: 5px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 800; color: #38bdf8;
+    }
+    .btn-group { display: flex; gap: 6px; pointer-events: auto; }
+    .btn {
+      background: #1e293b; color: #e2e8f0;
+      border: 1px solid #475569; padding: 5px 10px;
+      border-radius: 6px; font-size: 11px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn:hover { background: #334155; border-color: #38bdf8; color: #fff; }
+    .btn.active { background: #0284c7; border-color: #38bdf8; color: #fff; }
+
+    .stage-pill {
+      position: absolute; transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid #475569; border-radius: 6px;
+      padding: 4px 8px; font-size: 10px; font-weight: 700;
+      cursor: pointer; pointer-events: auto;
+      transition: all 0.2s; z-index: 6;
+      text-align: center;
+    }
+    .stage-pill:hover, .stage-pill.selected {
+      border-color: #38bdf8; background: #0f172a;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+      transform: translate(-50%, -50%) scale(1.07);
+    }
+
+    /* Lado Derecho: Guía Interactiva por Pestañas */
+    .guide-panel {
+      display: flex; flex-direction: column;
+      height: 100%; background: #0f172a;
+      padding: 12px 16px; overflow-y: auto;
+    }
+    .tabs {
+      display: flex; gap: 6px; margin-bottom: 10px;
+      border-bottom: 1px solid #334155; padding-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      background: #1e293b; color: #94a3b8;
+      border: 1px solid #334155; padding: 6px 11px;
+      border-radius: 6px; font-size: 11px; font-weight: 800;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tab.active {
+      background: #0284c7; color: #ffffff; border-color: #38bdf8;
+    }
+    .tab-content { display: none; flex-direction: column; gap: 10px; }
+    .tab-content.active { display: flex; }
+
+    .card {
+      background: #1e293b; border: 1px solid #334155;
+      border-left: 4px solid #38bdf8; border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .card h3 { font-size: 12.5px; color: #f8fafc; margin-bottom: 4px; }
+    .card p { font-size: 11.5px; color: #cbd5e1; line-height: 1.45; }
+    .code-box {
+      background: #090e1a; border: 1px solid #334155;
+      border-radius: 6px; padding: 8px 10px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11px; color: #38bdf8; white-space: pre-wrap;
+      margin-top: 6px;
+    }
+    .highlight { color: #fbbf24; font-weight: 700; }
+    .good { color: #4ade80; font-weight: 700; }
+    .bad { color: #f87171; font-weight: 700; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <!-- LADO IZQUIERDO: GEMELO 3D EN MODO DESPIECE DIDÁCTICO (EXPLODED VIEW) -->
+    <div id="viewport3d">
+      <div class="toolbar3d">
+        <div class="badge3d">🔧 GEMELO 3D DIDÁCTICO — HAZ CLIC EN CUALQUIER ETAPA O EN "DESPIECE 3D"</div>
+        <div class="btn-group">
+          <button id="btn-explode" class="btn active" onclick="toggleExplode()">💥 DESPIECE 3D (EXPLODED VIEW)</button>
+          <button class="btn" onclick="resetCam()">🎥 CENTRAR</button>
+        </div>
+      </div>
+
+      <!-- Etiquetas interactivas sobre cada etapa 3D -->
+      <div id="pill-0" class="stage-pill selected" onclick="selectStage(0)">1. FAN (s1, s8)<br><span style="color:#38bdf8">Admisión</span></div>
+      <div id="pill-1" class="stage-pill" onclick="selectStage(1)">2. LPC (s2)<br><span style="color:#4ade80">Baja Presión</span></div>
+      <div id="pill-2" class="stage-pill" onclick="selectStage(2)">3. HPC ★ (s11, s3)<br><span style="color:#f87171">52.1% Peso IA</span></div>
+      <div id="pill-3" class="stage-pill" onclick="selectStage(3)">4. COMBUSTOR (s9)<br><span style="color:#fb923c">11.7% Peso IA</span></div>
+      <div id="pill-4" class="stage-pill" onclick="selectStage(4)">5. LPT ★ (s4)<br><span style="color:#fbbf24">10.3% Peso IA</span></div>
+    </div>
+
+    <!-- LADO DERECHO: EXPLICACIÓN INTERACTIVA PASO A PASO -->
+    <div class="guide-panel">
+      <div class="tabs">
+        <button class="tab active" onclick="openTab(0)">1. Named Queries 8.3</button>
+        <button class="tab" onclick="openTab(1)">2. Bindings & view.custom</button>
+        <button class="tab" onclick="openTab(2)">3. SVG + 3D WebGL (#hash)</button>
+        <button class="tab" onclick="openTab(3)">4. Servidor MCP + IA</button>
+        <button class="tab" onclick="openTab(4)">5. Detalle Etapa 3D</button>
+      </div>
+
+      <!-- TAB 0: NAMED QUERIES -->
+      <div id="tab-0" class="tab-content active">
+        <div class="card" style="border-left-color:#38bdf8">
+          <h3>⚡ ¿Cómo funcionan las Named Queries en Ignition Perspective 8.3?</h3>
+          <p>En Ignition 8.3 ya no existen archivos binarios ocultos para las consultas SQL: cada Named Query es una carpeta en <span class="highlight">ignition/named-query/CMAPSS/&lt;Nombre&gt;/</span> compuesta por solo <b>2 archivos de texto plano</b>:</p>
+          <div class="code-box">1. query.sql      --> La consulta SQL con parámetros (:assetId, :simCycle)
+2. resource.json  --> Define la BD ("twin") y el tipo de cada parámetro:
+   "parameters": [
+     { "identifier": "assetId",  "sqlType": 7 },  // 7 = String
+     { "identifier": "simCycle", "sqlType": 2 }   // 2 = Integer
+   ]</div>
+        </div>
+        <div class="card" style="border-left-color:#f59e0b">
+          <h3>⚠️ Las 2 Reglas de Oro para evitar Puntos Rojos en Named Queries</h3>
+          <p>1. <span class="bad">Error clásico:</span> Pasar un número literal en el JSON del binding (ej. <code>"startCycle": 1</code>). Perspective exige que <b>todos los parámetros en view.json sean Strings</b> (<code>"startCycle": "1"</code> o <code>"{view.custom.simCycle}"</code>).<br>
+          2. <span class="good">Formato JSON:</span> Al usar <code>"returnFormat": "json"</code> en el binding hacia <code>view.custom.kpis</code>, Ignition devuelve un arreglo de diccionarios accesible directamente como <code>{view.custom.kpis[0].rul_cycles}</code>.</p>
+        </div>
+      </div>
+
+      <!-- TAB 1: BINDINGS & VIEW.CUSTOM -->
+      <div id="tab-1" class="tab-content">
+        <div class="card" style="border-left-color:#a855f7">
+          <h3>🔗 El Patrón Moderno: Centralizar en <code>view.custom</code> (Adiós a <code>../../..</code>)</h3>
+          <p>Cuando anidas tarjetas dentro de contenedores <code>Flex</code> en Perspective, las rutas relativas (<code>../Sibling</code> o <code>..../KPI_Row</code>) se rompen en cuanto agregas un contenedor nuevo. La arquitectura recomendada es:</p>
+          <div class="code-box">// En la raíz de view.json:
+"custom": {
+  "selectedAsset": "cmapss_1",
+  "simCycle": 192
+},
+"propConfig": {
+  "custom.kpis": {
+    "binding": {
+      "type": "query",
+      "config": {
+        "queryPath": "CMAPSS/turbofan_kpis",
+        "returnFormat": "json",
+        "parameters": {
+          "assetId": "{view.custom.selectedAsset}",
+          "simCycle": "{view.custom.simCycle}"
+        }
+      }
+    }
+  }
+}</div>
+          <p style="margin-top:6px">El <b>Dropdown</b> y el <b>Slider</b> se enlazan con <span class="good">"bidirectional": true</span> a <code>view.custom.selectedAsset</code> y <code>view.custom.simCycle</code>. Así, cualquier componente en cualquier nivel lee <code>{view.custom.kpis[0].lpt_temp_s4}</code> con 0 errores.</p>
+        </div>
+      </div>
+
+      <!-- TAB 2: SVG DINÁMICO + 3D WEBGL -->
+      <div id="tab-2" class="tab-content">
+        <div class="card" style="border-left-color:#10b981">
+          <h3>🎨 ¿Cómo hicimos el SVG Animado (2D) y el Gemelo 3D WebGL sin recargar?</h3>
+          <p><b>1. SVG Dinámico en <code>ia.display.image</code>:</b> Enlazamos <code>props.source</code> a una expresión <code>concat("data:image/svg+xml;utf8,&lt;svg...&gt;", ...)</code>. Usamos <span class="highlight">rgb(...)</span> y <span class="highlight">%23</span> en vez de <code>#</code> para que el navegador no corte el URI en los colores hexadecimales.</p>
+          <div class="code-box">// 2. Sincronización 60 FPS con el Visor 3D (ia.display.iframe):
+// En lugar de usar '?query=' (que recarga el iframe y reinicia la cámara 3D),
+// pasamos los sensores en el FRAGMENTO HASH (#):
+concat("http://localhost:8095/turbine3d.html#asset=", {view.custom.selectedAsset},
+       "&cycle=", {view.custom.kpis[0].current_cycle},
+       "&s11=", numberFormat({view.custom.kpis[0].hpc_static_press_s11}, "0.00"))</div>
+          <p style="margin-top:6px">Dentro del visor 3D, <code>window.addEventListener('hashchange', ...)</code> recibe los datos al instante sin parpadear ni perder el ángulo de rotación del mouse.</p>
+        </div>
+      </div>
+
+      <!-- TAB 3: SERVIDOR MCP + IA -->
+      <div id="tab-3" class="tab-content">
+        <div class="card" style="border-left-color:#f97316">
+          <h3>🤖 ¿Qué hace el Servidor MCP (<code>src/mcp_server.py</code>)?</h3>
+          <p>El <b>Model Context Protocol (MCP)</b> conecta al agente de IA directamente con el modelo <b>XGBoost + MAPIE</b> y con el contenedor Docker <code>twin-ignition</code> mediante 6 herramientas:</p>
+          <div class="code-box">• get_fleet_status()        --> Clasifica las 100 turbinas (CRITICAL/WARNING/HEALTHY)
+• predict_engine_rul(id)    --> Predice RUL y extrae los 5 sensores clave del motor
+• get_sensor_telemetry(id)  --> Calcula el Z-Score de deriva física contra la base sana
+• get_model_diagnostics()   --> Reporta RMSE (18.29), R² (0.79) y ranking de sensores
+• audit_perspective_hmi()   --> Audita view.json en Docker buscando errores de bindings
+• deploy_perspective_hmi()  --> Genera el JSON ISA-101 y lo inyecta en twin-ignition</div>
+        </div>
+      </div>
+
+      <!-- TAB 4: DETALLE DE LA ETAPA 3D SELECCIONADA -->
+      <div id="tab-4" class="tab-content">
+        <div class="card" style="border-left-color:#38bdf8">
+          <h3 id="st-title">Etapa 1: Admisión y Ventilador Frontal (FAN)</h3>
+          <p id="st-desc">El Fan frontal acelera una gran masa de aire frío (dividida entre el ducto de bypass externo y el núcleo del motor). En el dataset C-MAPSS FD001, sus sensores principales son T2 (s1: 518.67 °R) y la velocidad física del ventilador Nf (s8: ~2388.2 rpm).</p>
+          <div class="code-box" id="st-sql">Sensores en Named Query (turbofan_kpis.sql):
+• fan_inlet_temp_s1  (Señal s1 - Temperatura Total Entrada Fan [°R])
+• fan_speed_s8       (Señal s8 - Velocidad Física del Fan [rpm])</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stageDetails = [
+      {
+        title: "1. Admisión y Ventilador Frontal (FAN)",
+        desc: "El Fan frontal comprime el aire de entrada y lo divide entre el flujo secundario (Bypass) y el núcleo. En FD001 mantiene temperatura de entrada constante (518.67 °R) mientras Nf (s8) refleja la demanda de empuje.",
+        sql: "Sensores en Named Query (CMAPSS/turbofan_kpis):\n• fan_inlet_temp_s1 (s1: T2 [°R])\n• fan_speed_s8      (s8: Velocidad Física Nf [rpm])"
+      },
+      {
+        title: "2. Compresor de Baja Presión (LPC)",
+        desc: "Primera etapa de compresión axial del núcleo. A medida que los álabes sufren erosión y ensuciamiento, la temperatura de salida T24 (s2) sube gradualmente desde ~641.8 °R hasta superar 643.5 °R.",
+        sql: "Sensores en Named Query (CMAPSS/turbofan_kpis):\n• lpc_temp_s2 (s2: Temperatura Salida LPC T24 [°R])\n• Umbral Alerta: >= 642.8 °R | Crítico: >= 643.4 °R"
+      },
+      {
+        title: "3. Compresor de Alta Presión (HPC ★ 52.1% Importancia IA)",
+        desc: "Es el corazón del diagnóstico predictivo en FD001: el sensor s11 (Presión Estática en Salida HPC - Ps30) aporta el 52.1% de la ganancia total del modelo XGBoost. Su incremento por encima de 47.85 psia anticipa el fallo inminente.",
+        sql: "Sensores en Named Query (CMAPSS/turbofan_kpis):\n• hpc_static_press_s11 (s11: Presión Estática Ps30 [psia] - #1 en IA)\n• hpc_temp_s3          (s3: Temperatura Salida HPC T30 [°R])\n• hpc_press_s7         (s7: Presión Total HPC P30 [psia])"
+      },
+      {
+        title: "4. Cámara de Combustión y Eje Central (Combustor & Core)",
+        desc: "Donde se inyecta el combustible (phi s12) y gira el eje de alta velocidad Nc (s9). Es la segunda variable más importante del modelo IA (11.7%), presentando una deriva de +9.3σ antes del colapso.",
+        sql: "Sensores en Named Query (CMAPSS/turbofan_kpis):\n• core_speed_s9 (s9: Velocidad Física del Núcleo Nc [rpm] - #2 en IA)\n• fuel_flow_s12 (s12: Relación Flujo Combustible / Ps30 [pps/psia])"
+      },
+      {
+        title: "5. Turbina de Baja Presión y Escape (LPT ★ 10.3% Importancia IA)",
+        desc: "Extrae energía de los gases de combustión para mover el Fan y el LPC. La temperatura de escape T50 (s4) es el indicador térmico principal del SCADA: cuando supera 1418 °R, el motor entra en estado Crítico.",
+        sql: "Sensores en Named Query (CMAPSS/turbofan_kpis):\n• lpt_temp_s4  (s4: Temperatura Salida LPT T50 [°R] - #3 en IA)\n• lpt_bleed_s21 (s21: Flujo de Purga Refrigerante LPT W33 [lbm/s])"
+      }
+    ];
+
+    function openTab(idx) {
+      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+      document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
+    }
+
+    function selectStage(idx) {
+      document.querySelectorAll('.stage-pill').forEach((p, i) => p.classList.toggle('selected', i === idx));
+      document.getElementById('st-title').textContent = stageDetails[idx].title;
+      document.getElementById('st-desc').textContent = stageDetails[idx].desc;
+      document.getElementById('st-sql').textContent = stageDetails[idx].sql;
+      openTab(4);
+    }
+
+    // ==================== VISOR 3D CON DESPIECE (EXPLODED VIEW) ====================
+    const vp = document.getElementById('viewport3d');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, vp.clientWidth / vp.clientHeight, 0.1, 1000);
+    camera.position.set(0.5, 3.6, 15.2);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(vp.clientWidth, vp.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    vp.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0x94a3b8, 0.85));
+    const dl = new THREE.DirectionalLight(0xffffff, 1.2);
+    dl.position.set(8, 12, 10);
+    scene.add(dl);
+
+    const rootGroup = new THREE.Group();
+    rootGroup.rotation.y = 0.25;
+    rootGroup.rotation.x = 0.14;
+    scene.add(rootGroup);
+
+    const matShaft = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.25 });
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 11.8, 24), matShaft);
+    shaft.rotation.z = Math.PI / 2;
+    rootGroup.add(shaft);
+
+    // 5 Grupos 3D independientes para animar el Despiece (Exploded View)
+    const stageGroups = [];
+    const basePositions = [-3.6, -1.9, -0.2, 1.5, 3.3];
+    const explodedPositions = [-5.0, -2.5, 0.0, 2.5, 5.0];
+    let isExploded = true;
+
+    const stageColors = [0x38bdf8, 0x10b981, 0xef4444, 0xf97316, 0xf59e0b];
+    const stageRadii = [2.1, 1.55, 1.32, 1.22, 1.6];
+
+    for (let s = 0; s < 5; s++) {
+      const g = new THREE.Group();
+      g.position.x = explodedPositions[s];
+      const mat = new THREE.MeshStandardMaterial({
+        color: stageColors[s], metalness: 0.65, roughness: 0.28,
+        emissive: stageColors[s], emissiveIntensity: 0.22
+      });
+
+      if (s === 3) {
+        // Combustor chamber
+        const cyl = new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.22, 1.1, 28, 1, true), mat);
+        cyl.rotation.z = Math.PI / 2;
+        g.add(cyl);
+      } else {
+        // Rotor con álabes
+        const rOut = stageRadii[s];
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.6, 24), matShaft);
+        hub.rotation.z = Math.PI / 2;
+        g.add(hub);
+        const bGeo = new THREE.BoxGeometry(0.22, rOut - 0.55, 0.14);
+        const nB = 22 + s * 4;
+        for (let b = 0; b < nB; b++) {
+          const piv = new THREE.Group();
+          piv.rotation.x = (b / nB) * Math.PI * 2;
+          const blade = new THREE.Mesh(bGeo, mat);
+          blade.position.y = 0.55 + (rOut - 0.55) / 2;
+          blade.rotation.y = 0.35;
+          piv.add(blade);
+          g.add(piv);
+        }
+      }
+      // Anillo guía alrededor de cada etapa
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(stageRadii[s] + 0.12, 0.03, 12, 40),
+        new THREE.MeshBasicMaterial({ color: stageColors[s] })
+      );
+      ring.rotation.y = Math.PI / 2;
+      g.add(ring);
+
+      rootGroup.add(g);
+      stageGroups.push(g);
+    }
+
+    function toggleExplode() {
+      isExploded = !isExploded;
+      document.getElementById('btn-explode').classList.toggle('active', isExploded);
+    }
+    function resetCam() {
+      rootGroup.rotation.y = 0.25;
+      rootGroup.rotation.x = 0.14;
+      camera.position.z = 15.2;
+    }
+
+    let drag = false, px = 0, py = 0;
+    renderer.domElement.addEventListener('mousedown', e => { drag = true; px = e.clientX; py = e.clientY; });
+    window.addEventListener('mouseup', () => { drag = false; });
+    window.addEventListener('mousemove', e => {
+      if (!drag) return;
+      rootGroup.rotation.y += (e.clientX - px) * 0.008;
+      rootGroup.rotation.x = Math.max(-0.8, Math.min(0.8, rootGroup.rotation.x + (e.clientY - py) * 0.008));
+      px = e.clientX; py = e.clientY;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      stageGroups.forEach((g, i) => {
+        const targetX = isExploded ? explodedPositions[i] : basePositions[i];
+        g.position.x += (targetX - g.position.x) * 0.08;
+        g.rotation.x += 0.035 + i * 0.012;
+
+        // Proyectar etiqueta HTML de la etapa
+        const v = new THREE.Vector3(g.position.x, stageRadii[i] + 0.55, 0);
+        v.applyMatrix4(rootGroup.matrixWorld);
+        v.project(camera);
+        const sx = (v.x * 0.5 + 0.5) * vp.clientWidth;
+        const sy = (-(v.y * 0.5) + 0.5) * vp.clientHeight;
+        const pill = document.getElementById(`pill-${i}`);
+        pill.style.left = `${sx}px`;
+        pill.style.top = `${sy}px`;
+      });
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+    }
+    window.addEventListener('resize', () => {
+      camera.aspect = vp.clientWidth / vp.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(vp.clientWidth, vp.clientHeight);
+    });
+    animate();
+  </script>
+</body>
+</html>

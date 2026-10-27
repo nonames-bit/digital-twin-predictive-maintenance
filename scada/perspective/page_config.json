@@ -1,0 +1,13 @@
+{
+  "pages": {
+    "/": {
+      "viewPath": "Turbofan_Overview"
+    },
+    "/guia": {
+      "viewPath": "Arquitectura_Guia"
+    }
+  },
+  "sharedDocks": {
+    "cornerPriority": "top-bottom"
+  }
+}

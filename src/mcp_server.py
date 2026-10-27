@@ -986,6 +986,28 @@ def generate_isa101_perspective_view() -> dict[str, Any]:
                             },
                         },
                         {
+                            "meta": {"name": "Nav_To_Guide"},
+                            "type": "ia.navigation.link",
+                            "position": {"basis": "275px", "shrink": 0},
+                            "props": {
+                                "page": "/guia",
+                                "text": "🎓 GUÍA ARQUITECTURA, NQ & MCP",
+                                "style": {
+                                    "backgroundColor": "#1E1B4B",
+                                    "color": "#C084FC",
+                                    "border": "1px solid #A855F7",
+                                    "borderRadius": "8px",
+                                    "padding": "7px 12px",
+                                    "fontWeight": "800",
+                                    "fontSize": "12px",
+                                    "textAlign": "center",
+                                    "textDecoration": "none",
+                                    "marginRight": "12px",
+                                    "letterSpacing": "0.03em",
+                                },
+                            },
+                        },
+                        {
                             "meta": {"name": "Dropdown"},
                             "type": "ia.input.dropdown",
                             "position": {"basis": "220px", "shrink": 0},
@@ -1276,17 +1298,785 @@ def generate_isa101_perspective_view() -> dict[str, Any]:
     }
 
 
+def _build_architecture_pipeline_svg_expr() -> str:
+    """
+    Construye una expresión Perspective que genera un Diagrama SVG Animado de Arquitectura End-to-End
+    + Gráfica de Barras SVG de Importancia de Sensores IA (XGBoost), usando exclusivamente rgb() sin '#'.
+    """
+    parts = [
+        '"data:image/svg+xml;utf8,',
+        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1500 250' width='100%' height='100%'>",
+        "<rect width='1500' height='250' rx='10' fill='rgb(9,14,26)'/>",
+        # Cuadrícula técnica de fondo
+        "<g stroke='rgb(30,41,59)' stroke-width='1' opacity='0.55'>",
+        "<line x1='0' y1='50' x2='1500' y2='50'/><line x1='0' y1='125' x2='1500' y2='125'/><line x1='0' y1='200' x2='1500' y2='200'/>",
+        "<line x1='250' y1='0' x2='250' y2='250'/><line x1='500' y1='0' x2='500' y2='250'/><line x1='750' y1='0' x2='750' y2='250'/>",
+        "<line x1='1000' y1='0' x2='1000' y2='250'/><line x1='1250' y1='0' x2='1250' y2='250'/>",
+        "</g>",
+        # Título superior del diagrama SVG
+        "<text x='20' y='26' fill='rgb(56,189,248)' font-family='sans-serif' font-size='13' font-weight='bold'>",
+        "FLUJO DE DATOS EN TIEMPO REAL — ARQUITECTURA END-TO-END DEL GEMELO DIGITAL + SERVIDOR MCP + PERSPECTIVE 8.3",
+        "</text>",
+        "<text x='1480' y='26' text-anchor='end' fill='rgb(168,85,247)' font-family='monospace' font-size='12' font-weight='bold'>",
+        "ACTIVO EN PRUEBA: \" + {view.custom.selectedAsset} + \" | CICLO: \" + {view.custom.simCycle} + \" | RUL IA: \" + numberFormat( coalesce({view.custom.kpis[0].rul_cycles}, 0.0), \"0.0\" ) + \" CICLOS",
+        "</text>",
+        # Tuberías de conexión entre los 5 bloques de arquitectura
+        "<g stroke='rgb(51,65,85)' stroke-width='4' fill='none'>",
+        "<line x1='215' y1='115' x2='255' y2='115'/>",
+        "<line x1='455' y1='115' x2='495' y2='115'/>",
+        "<line x1='695' y1='115' x2='735' y2='115'/>",
+        "<line x1='945' y1='115' x2='985' y2='115'/>",
+        "</g>",
+        # Paquetes de datos animados circulando por las tuberías
+        "<circle r='5' fill='rgb(56,189,248)'><animate attributeName='cx' values='215;255' dur='0.9s' repeatCount='indefinite'/><animate attributeName='cy' values='115;115' dur='0.9s' repeatCount='indefinite'/></circle>",
+        "<circle r='5' fill='rgb(16,185,129)'><animate attributeName='cx' values='455;495' dur='0.9s' repeatCount='indefinite'/><animate attributeName='cy' values='115;115' dur='0.9s' repeatCount='indefinite'/></circle>",
+        "<circle r='5' fill='rgb(245,158,11)'><animate attributeName='cx' values='695;735' dur='0.9s' repeatCount='indefinite'/><animate attributeName='cy' values='115;115' dur='0.9s' repeatCount='indefinite'/></circle>",
+        "<circle r='5' fill='rgb(168,85,247)'><animate attributeName='cx' values='945;985' dur='0.9s' repeatCount='indefinite'/><animate attributeName='cy' values='115;115' dur='0.9s' repeatCount='indefinite'/></circle>",
+        # BLOQUE 1: NASA C-MAPSS + MQTT
+        "<rect x='18' y='45' width='197' height='145' rx='8' fill='rgb(15,23,42)' stroke='rgb(56,189,248)' stroke-width='2'/>",
+        "<rect x='18' y='45' width='197' height='26' rx='8' fill='rgb(12,74,110)'/>",
+        "<text x='116' y='62' text-anchor='middle' fill='rgb(255,255,255)' font-family='sans-serif' font-size='11' font-weight='bold'>1. EDGE &amp; NASA C-MAPSS</text>",
+        "<text x='28' y='90' fill='rgb(226,232,240)' font-family='monospace' font-size='10'>datasets/cmapss/adapter.py</text>",
+        "<text x='28' y='110' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• 21 Sensores + 3 OpSettings</text>",
+        "<text x='28' y='128' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• Tope RUL Piecewise: 125 cic</text>",
+        "<text x='28' y='146' fill='rgb(56,189,248)' font-family='monospace' font-size='10'>• Mosquitto MQTT :1883</text>",
+        "<text x='28' y='172' fill='rgb(16,185,129)' font-family='monospace' font-size='10' font-weight='bold'>● 24 Señales / Ciclo</text>",
+        # BLOQUE 2: TIMESCALEDB + IA XGBOOST/MAPIE
+        "<rect x='255' y='45' width='200' height='145' rx='8' fill='rgb(15,23,42)' stroke='rgb(16,185,129)' stroke-width='2'/>",
+        "<rect x='255' y='45' width='200' height='26' rx='8' fill='rgb(6,95,70)'/>",
+        "<text x='355' y='62' text-anchor='middle' fill='rgb(255,255,255)' font-family='sans-serif' font-size='11' font-weight='bold'>2. TIMESCALEDB + IA RUL</text>",
+        "<text x='265' y='90' fill='rgb(226,232,240)' font-family='monospace' font-size='10'>PostgreSQL 16 (:5432)</text>",
+        "<text x='265' y='110' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• Hypertables: telemetry/pred</text>",
+        "<text x='265' y='128' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• XGBoost (RMSE: 14.12 cic)</text>",
+        "<text x='265' y='146' fill='rgb(16,185,129)' font-family='monospace' font-size='10'>• MAPIE Conformal 90% (91%)</text>",
+        "<text x='265' y='172' fill='rgb(56,189,248)' font-family='monospace' font-size='10' font-weight='bold'>IC90: [\" + numberFormat( coalesce({view.custom.kpis[0].rul_lower_90}, 0.0), \"0.0\" ) + \" - \" + numberFormat( coalesce({view.custom.kpis[0].rul_upper_90}, 0.0), \"0.0\" ) + \"]</text>",
+        # BLOQUE 3: NAMED QUERIES 8.3
+        "<rect x='495' y='45' width='200' height='145' rx='8' fill='rgb(15,23,42)' stroke='rgb(245,158,11)' stroke-width='2'/>",
+        "<rect x='495' y='45' width='200' height='26' rx='8' fill='rgb(146,64,14)'/>",
+        "<text x='595' y='62' text-anchor='middle' fill='rgb(255,255,255)' font-family='sans-serif' font-size='11' font-weight='bold'>3. NAMED QUERIES 8.3</text>",
+        "<text x='505' y='90' fill='rgb(253,230,138)' font-family='monospace' font-size='10'>CMAPSS/turbofan_kpis</text>",
+        "<text x='505' y='110' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• query.sql + resource.json</text>",
+        "<text x='505' y='128' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• returnFormat: json</text>",
+        "<text x='505' y='146' fill='rgb(245,158,11)' font-family='monospace' font-size='10'>• Params en view.json: STRING</text>",
+        "<text x='505' y='172' fill='rgb(255,255,255)' font-family='monospace' font-size='10' font-weight='bold'>:assetId='\" + {view.custom.selectedAsset} + \"'</text>",
+        # BLOQUE 4: ESTADO GLOBAL view.custom
+        "<rect x='735' y='45' width='210' height='145' rx='8' fill='rgb(15,23,42)' stroke='rgb(168,85,247)' stroke-width='2'/>",
+        "<rect x='735' y='45' width='210' height='26' rx='8' fill='rgb(88,28,135)'/>",
+        "<text x='840' y='62' text-anchor='middle' fill='rgb(255,255,255)' font-family='sans-serif' font-size='11' font-weight='bold'>4. ESTADO GLOBAL view.custom</text>",
+        "<text x='745' y='90' fill='rgb(233,213,255)' font-family='monospace' font-size='10'>{view.custom.kpis[0].*}</text>",
+        "<text x='745' y='110' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• Cero rutas relativas rotas</text>",
+        "<text x='745' y='128' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>• Bidirectional Slider/Drop</text>",
+        "<text x='745' y='146' fill='rgb(56,189,248)' font-family='monospace' font-size='10'>• SVG rgb() + 3D WebGL URL-Hash</text>",
+        "<text x='745' y='172' fill='rgb(16,185,129)' font-family='monospace' font-size='10' font-weight='bold'>Salud: \" + coalesce({view.custom.kpis[0].health_status}, \"Normal\") + \"</text>",
+        # BLOQUE 5 (DERECHA AMPLIA): GRÁFICA SVG DE BARRAS DE IMPORTANCIA IA + SERVIDOR MCP
+        "<rect x='985' y='45' width='497' height='185' rx='8' fill='rgb(15,23,42)' stroke='rgb(56,189,248)' stroke-width='2'/>",
+        "<rect x='985' y='45' width='497' height='26' rx='8' fill='rgb(30,41,59)'/>",
+        "<text x='1233' y='62' text-anchor='middle' fill='rgb(56,189,248)' font-family='sans-serif' font-size='11' font-weight='bold'>5. IMPORTANCIA DE SENSORES IA (XGBOOST) &amp; SERVIDOR FASTMCP (6 TOOLS)</text>",
+        # Barras horizontales de Feature Importance
+        "<text x='1000' y='92' fill='rgb(226,232,240)' font-family='monospace' font-size='10'>s11 Presión HPC (52.1%)</text>",
+        "<rect x='1165' y='81' width='230' height='13' rx='3' fill='rgb(30,41,59)'/>",
+        "<rect x='1165' y='81' width='195' height='13' rx='3' fill='rgb(239,68,68)'/>",
+        "<text x='1405' y='92' fill='rgb(248,113,113)' font-family='monospace' font-size='10' font-weight='bold'>\" + numberFormat( coalesce({view.custom.kpis[0].hpc_static_press_s11}, 47.5), \"0.00\" ) + \" psia</text>",
+        "<text x='1000' y='114' fill='rgb(226,232,240)' font-family='monospace' font-size='10'>s9  Vel. Núcleo (11.7%)</text>",
+        "<rect x='1165' y='103' width='230' height='13' rx='3' fill='rgb(30,41,59)'/>",
+        "<rect x='1165' y='103' width='68' height='13' rx='3' fill='rgb(168,85,247)'/>",
+        "<text x='1405' y='114' fill='rgb(192,132,252)' font-family='monospace' font-size='10' font-weight='bold'>\" + numberFormat( coalesce({view.custom.kpis[0].core_speed_s9}, 9050.0), \"0.0\" ) + \" rpm</text>",
+        "<text x='1000' y='136' fill='rgb(226,232,240)' font-family='monospace' font-size='10'>s4  Temp. LPT   (10.3%)</text>",
+        "<rect x='1165' y='125' width='230' height='13' rx='3' fill='rgb(30,41,59)'/>",
+        "<rect x='1165' y='125' width='60' height='13' rx='3' fill='rgb(249,115,22)'/>",
+        "<text x='1405' y='136' fill='rgb(251,146,60)' font-family='monospace' font-size='10' font-weight='bold'>\" + numberFormat( coalesce({view.custom.kpis[0].lpt_temp_s4}, 1400.0), \"0.0\" ) + \" °R</text>",
+        "<text x='1000' y='158' fill='rgb(226,232,240)' font-family='monospace' font-size='10'>s12 Flujo Comb.  (5.2%)</text>",
+        "<rect x='1165' y='147' width='230' height='13' rx='3' fill='rgb(30,41,59)'/>",
+        "<rect x='1165' y='147' width='34' height='13' rx='3' fill='rgb(56,189,248)'/>",
+        "<text x='1405' y='158' fill='rgb(56,189,248)' font-family='monospace' font-size='10' font-weight='bold'>\" + numberFormat( coalesce({view.custom.kpis[0].fuel_flow_s12}, 521.0), \"0.0\" ) + \" pps</text>",
+        "<text x='1000' y='182' fill='rgb(16,185,129)' font-family='monospace' font-size='10' font-weight='bold'>MCP Tools (src/mcp_server.py): get_fleet_status | predict_engine_rul | audit_hmi | deploy_hmi</text>",
+        "<text x='1000' y='202' fill='rgb(148,163,184)' font-family='sans-serif' font-size='10'>Mueve el Slider o cambia de Turbina arriba: este SVG, el Gemelo 3D y las Tablas reaccionan al instante.</text>",
+        # Pie informativo izquierdo
+        "<rect x='18' y='200' width='927' height='30' rx='6' fill='rgb(15,23,42)' stroke='rgb(51,65,85)' stroke-width='1'/>",
+        "<text x='30' y='219' fill='rgb(226,232,240)' font-family='monospace' font-size='11'>",
+        "💡 REGLA DE ORO PERSPECTIVE 8.3: Dropdown/Slider ➔ view.custom.selectedAsset / simCycle ➔ Named Query (CMAPSS/turbofan_kpis) ➔ view.custom.kpis[0]",
+        "</text>",
+        "</svg>\"",
+    ]
+    return "".join(parts)
+
+
+def _build_guide_tech_card(
+    name: str,
+    badge_text: str,
+    title: str,
+    bullet_1: str,
+    bullet_2: str,
+    code_snippet: str,
+    accent_color: str,
+) -> dict[str, Any]:
+    """Construye una tarjeta pedagógica para explicar conceptos clave de Ignition Perspective 8.3 y MCP."""
+    return {
+        "meta": {"name": name},
+        "type": "ia.container.flex",
+        "position": {"basis": "24%", "grow": 1},
+        "props": {
+            "direction": "column",
+            "justify": "space-between",
+            "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": f"4px solid {accent_color}",
+                "padding": "10px 14px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)",
+                "gap": "4px",
+            },
+        },
+        "children": [
+            {
+                "meta": {"name": "Lbl_Badge"},
+                "type": "ia.display.label",
+                "position": {"basis": "16px", "shrink": 0},
+                "props": {
+                    "text": badge_text,
+                    "style": {
+                        "color": accent_color,
+                        "fontSize": "10px",
+                        "fontWeight": "800",
+                        "letterSpacing": "0.06em",
+                    },
+                },
+            },
+            {
+                "meta": {"name": "Lbl_Title"},
+                "type": "ia.display.label",
+                "position": {"basis": "20px", "shrink": 0},
+                "props": {
+                    "text": title,
+                    "style": {
+                        "color": "#F8FAFC",
+                        "fontSize": "13px",
+                        "fontWeight": "800",
+                    },
+                },
+            },
+            {
+                "meta": {"name": "Lbl_B1"},
+                "type": "ia.display.label",
+                "position": {"basis": "32px", "shrink": 0},
+                "props": {
+                    "text": bullet_1,
+                    "style": {
+                        "color": "#CBD5E1",
+                        "fontSize": "11px",
+                        "lineHeight": "1.3",
+                    },
+                },
+            },
+            {
+                "meta": {"name": "Lbl_B2"},
+                "type": "ia.display.label",
+                "position": {"basis": "32px", "shrink": 0},
+                "props": {
+                    "text": bullet_2,
+                    "style": {
+                        "color": "#94A3B8",
+                        "fontSize": "11px",
+                        "lineHeight": "1.3",
+                    },
+                },
+            },
+            {
+                "meta": {"name": "Lbl_Code"},
+                "type": "ia.display.label",
+                "position": {"basis": "26px", "shrink": 0},
+                "props": {
+                    "text": code_snippet,
+                    "style": {
+                        "backgroundColor": "#090E1A",
+                        "color": "#38BDF8",
+                        "fontFamily": "JetBrains Mono, Consolas, monospace",
+                        "fontSize": "10px",
+                        "fontWeight": "700",
+                        "padding": "4px 8px",
+                        "borderRadius": "6px",
+                        "border": "1px solid #1E293B",
+                    },
+                },
+            },
+        ],
+    }
+
+
+def generate_architecture_guide_view() -> dict[str, Any]:
+    """
+    Genera la vista educativa e interactiva `Arquitectura_Guia` (URL `/guia`) en Ignition Perspective 8.3.
+    Explica Named Queries, `view.custom`, SVG reactivos, Gemelo 3D en Despiece (Exploded View) y el Servidor MCP.
+    """
+    guia_iframe_expr = (
+        'concat("http://localhost:8095/guia_gemelo3d.html#asset=", {view.custom.selectedAsset}, '
+        '"&cycle=", {view.custom.simCycle}, '
+        '"&rul=", coalesce({view.custom.kpis[0].rul_cycles}, 7.7), '
+        '"&s4=", coalesce({view.custom.kpis[0].lpt_temp_s4}, 1425.8), '
+        '"&s11=", coalesce({view.custom.kpis[0].hpc_static_press_s11}, 48.18), '
+        '"&s9=", coalesce({view.custom.kpis[0].core_speed_s9}, 9062.0), '
+        '"&health=", coalesce({view.custom.kpis[0].health_status}, "Critico"))'
+    )
+
+    tech_cards = [
+        _build_guide_tech_card(
+            name="Card_NQ",
+            badge_text="1. NAMED QUERIES EN IGNITION 8.3",
+            title="Carpeta query.sql + resource.json",
+            bullet_1="• Cada Named Query vive en ignition/named-query/CMAPSS/<nombre>/ con su SQL y su resource.json (sqlType 7=String, 2=Int4).",
+            bullet_2="• CRÍTICO EN 8.3: En view.json, todos los parámetros en binding.config.parameters deben escribirse como STRING (\"1\", no 1).",
+            code_snippet='parameters: {"assetId": "{view.custom.selectedAsset}", "startCycle": "1"}',
+            accent_color="#F59E0B",
+        ),
+        _build_guide_tech_card(
+            name="Card_ViewCustom",
+            badge_text="2. ADIÓS A RUTAS RELATIVAS ANIDADAS",
+            title="Patrón de Estado Global view.custom",
+            bullet_1="• Antes se usaban rutas relativas ({.. / Header / Dropdown.props.value}) que se rompían al mover contenedores Flex.",
+            bullet_2="• Ahora Dropdown y Slider usan bidirectional: true hacia view.custom, y 1 solo Named Query llena view.custom.kpis[0].",
+            code_snippet="Dropdown (bidirectional) ➔ view.custom.selectedAsset ➔ view.custom.kpis[0].rul_cycles",
+            accent_color="#A855F7",
+        ),
+        _build_guide_tech_card(
+            name="Card_SVG",
+            badge_text="3. DIBUJOS CAD SVG EN PERSPECTIVE",
+            title="Data URI + Animación Nativa SMIL",
+            bullet_1="• Puedes inyectar código <svg> dinámico en un componente ia.display.image usando concat('data:image/svg+xml;utf8,<svg>...').",
+            bullet_2="• REGLA CRÍTICA: Nunca uses '#' en colores dentro del Data URI porque el navegador corta el texto; usa siempre rgb(r,g,b).",
+            code_snippet="<animateTransform type='rotate' from='0 240 120' to='360 240 120' dur='0.4s'/>",
+            accent_color="#38BDF8",
+        ),
+        _build_guide_tech_card(
+            name="Card_3D_MCP",
+            badge_text="4. GEMELO 3D WEBGL + SERVIDOR FASTMCP",
+            title="Sincronía #hash a 60 FPS e IA Agéntica",
+            bullet_1="• El visor Three.js recibe telemetría por URL #hash (window.onhashchange) a 60 FPS sin recargar el iframe ni perder la cámara.",
+            bullet_2="• src/mcp_server.py expone 6 herramientas FastMCP para auditar vistas Perspective, predecir RUL con XGBoost+MAPIE y desplegar.",
+            code_snippet="python src/mcp_server.py --demo  |  6 Tools MCP listas para Claude/Cursor",
+            accent_color="#10B981",
+        ),
+    ]
+
+    return {
+        "custom": {
+            "selectedAsset": "cmapss_1",
+            "simCycle": 192,
+        },
+        "params": {},
+        "propConfig": {
+            "custom.kpis": {
+                "binding": {
+                    "type": "query",
+                    "config": {
+                        "parameters": {
+                            "assetId": "{view.custom.selectedAsset}",
+                            "simCycle": "{view.custom.simCycle}",
+                        },
+                        "queryPath": "CMAPSS/turbofan_kpis",
+                        "returnFormat": "json",
+                    },
+                }
+            }
+        },
+        "props": {"defaultSize": {"width": 1600, "height": 1240}},
+        "root": {
+            "meta": {"name": "root"},
+            "type": "ia.container.flex",
+            "props": {
+                "direction": "column",
+                "style": {
+                    "backgroundColor": "#0B1120",
+                    "color": "#F8FAFC",
+                    "padding": "12px 18px",
+                    "gap": "10px",
+                    "fontFamily": "Inter, Segoe UI, Roboto, sans-serif",
+                },
+            },
+            "children": [
+                # 1. CABECERA CON CONTROLES EN VIVO Y BOTÓN PARA VOLVER AL HMI OPERATIVO
+                {
+                    "meta": {"name": "Header_Guia"},
+                    "type": "ia.container.flex",
+                    "position": {"basis": "62px", "shrink": 0},
+                    "props": {
+                        "direction": "row",
+                        "justify": "space-between",
+                        "alignItems": "center",
+                        "style": {
+                            "backgroundColor": "#1E293B",
+                            "border": "1px solid #38BDF8",
+                            "borderRadius": "10px",
+                            "padding": "8px 16px",
+                            "boxShadow": "0 4px 14px rgba(0, 0, 0, 0.35)",
+                        },
+                    },
+                    "children": [
+                        {
+                            "meta": {"name": "Title_Block"},
+                            "type": "ia.container.flex",
+                            "position": {"basis": "520px", "grow": 1},
+                            "props": {"direction": "column", "justify": "center"},
+                            "children": [
+                                {
+                                    "meta": {"name": "Lbl_Title"},
+                                    "type": "ia.display.label",
+                                    "position": {"basis": "22px"},
+                                    "props": {
+                                        "text": "🎓 CENTRO DE ARQUITECTURA E INGENIERÍA: PERSPECTIVE 8.3 + NAMED QUERIES + MCP + GEMELO 3D",
+                                        "style": {
+                                            "color": "#F8FAFC",
+                                            "fontSize": "14px",
+                                            "fontWeight": "800",
+                                            "letterSpacing": "0.03em",
+                                        },
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "Lbl_Sub"},
+                                    "type": "ia.display.label",
+                                    "position": {"basis": "16px"},
+                                    "props": {
+                                        "text": "● GUÍA INTERACTIVA EN VIVO | PRUEBA LOS CONTROLES AQUÍ MISMO PARA VER CÓMO RESPONDEN LOS NAMED QUERIES Y EL GEMELO 3D",
+                                        "style": {
+                                            "color": "#38BDF8",
+                                            "fontSize": "11px",
+                                            "fontWeight": "600",
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            "meta": {"name": "Lbl_Cycle_Guia"},
+                            "type": "ia.display.label",
+                            "position": {"basis": "165px", "shrink": 0},
+                            "propConfig": {
+                                "props.text": {
+                                    "binding": {
+                                        "type": "expr",
+                                        "config": {
+                                            "expression": 'concat("⏱️ Ciclo Simulado: ", {view.custom.simCycle})'
+                                        },
+                                    }
+                                }
+                            },
+                            "props": {
+                                "style": {
+                                    "color": "#38BDF8",
+                                    "fontSize": "12px",
+                                    "fontWeight": "800",
+                                    "textAlign": "right",
+                                    "marginRight": "8px",
+                                }
+                            },
+                        },
+                        {
+                            "meta": {"name": "Slider_Guia"},
+                            "type": "ia.input.slider",
+                            "position": {"basis": "200px", "shrink": 0},
+                            "propConfig": {
+                                "props.value": {
+                                    "binding": {
+                                        "type": "property",
+                                        "config": {
+                                            "bidirectional": True,
+                                            "path": "view.custom.simCycle",
+                                        },
+                                    }
+                                }
+                            },
+                            "props": {
+                                "min": 1,
+                                "max": 192,
+                                "step": 1,
+                                "color": "#38BDF8",
+                                "style": {"marginRight": "12px"},
+                            },
+                        },
+                        {
+                            "meta": {"name": "Dropdown_Guia"},
+                            "type": "ia.input.dropdown",
+                            "position": {"basis": "165px", "shrink": 0},
+                            "propConfig": {
+                                "props.options": {
+                                    "binding": {
+                                        "type": "query",
+                                        "config": {
+                                            "queryPath": "CMAPSS/active_assets",
+                                            "returnFormat": "json",
+                                        },
+                                    }
+                                },
+                                "props.value": {
+                                    "binding": {
+                                        "type": "property",
+                                        "config": {
+                                            "bidirectional": True,
+                                            "path": "view.custom.selectedAsset",
+                                        },
+                                    }
+                                },
+                            },
+                            "props": {
+                                "style": {
+                                    "backgroundColor": "#0F172A",
+                                    "color": "#F8FAFC",
+                                    "border": "1px solid #38BDF8",
+                                    "borderRadius": "8px",
+                                    "fontWeight": "700",
+                                    "fontSize": "13px",
+                                    "marginRight": "12px",
+                                }
+                            },
+                        },
+                        {
+                            "meta": {"name": "Nav_Back_HMI"},
+                            "type": "ia.navigation.link",
+                            "position": {"basis": "235px", "shrink": 0},
+                            "props": {
+                                "page": "/",
+                                "text": "⬅️ VOLVER AL HMI OPERATIVO",
+                                "style": {
+                                    "backgroundColor": "#065F46",
+                                    "color": "#FFFFFF",
+                                    "border": "1px solid #10B981",
+                                    "borderRadius": "8px",
+                                    "padding": "8px 12px",
+                                    "fontWeight": "800",
+                                    "fontSize": "12px",
+                                    "textAlign": "center",
+                                    "textDecoration": "none",
+                                    "letterSpacing": "0.03em",
+                                },
+                            },
+                        },
+                    ],
+                },
+                # 2. DIAGRAMA SVG ANIMADO DE ARQUITECTURA END-TO-END + BARRAS DE IMPORTANCIA IA
+                {
+                    "meta": {"name": "Arch_SVG_Container"},
+                    "type": "ia.container.flex",
+                    "position": {"basis": "240px", "shrink": 0},
+                    "props": {
+                        "direction": "column",
+                        "style": {
+                            "backgroundColor": "#1E293B",
+                            "borderRadius": "10px",
+                            "border": "1px solid #334155",
+                            "padding": "6px 10px",
+                            "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)",
+                        },
+                    },
+                    "children": [
+                        {
+                            "meta": {"name": "Arch_Pipeline_SVG"},
+                            "type": "ia.display.image",
+                            "position": {"basis": "224px", "grow": 1},
+                            "propConfig": {
+                                "props.source": {
+                                    "binding": {
+                                        "type": "expr",
+                                        "config": {
+                                            "expression": _build_architecture_pipeline_svg_expr(),
+                                        },
+                                    }
+                                }
+                            },
+                            "props": {
+                                "fit": {"mode": "contain"},
+                                "style": {
+                                    "width": "100%",
+                                    "height": "100%",
+                                    "borderRadius": "8px",
+                                    "backgroundColor": "#090E1A",
+                                },
+                            },
+                        }
+                    ],
+                },
+                # 3. LAS 4 TARJETAS DE ACTUALIZACIÓN TÉCNICA (NAMED QUERIES, VIEW.CUSTOM, SVG, 3D + MCP)
+                {
+                    "meta": {"name": "Tech_Cards_Row"},
+                    "type": "ia.container.flex",
+                    "position": {"basis": "165px", "shrink": 0},
+                    "props": {
+                        "direction": "row",
+                        "justify": "space-between",
+                        "style": {"gap": "12px"},
+                    },
+                    "children": tech_cards,
+                },
+                # 4. LABORATORIO INTERACTIVO: GEMELO 3D EN DESPIECE (EXPLODED VIEW) + INSPECTOR EN VIVO DE NAMED QUERIES
+                {
+                    "meta": {"name": "Interactive_Lab_Row"},
+                    "type": "ia.container.flex",
+                    "position": {"basis": "690px", "grow": 1},
+                    "props": {
+                        "direction": "row",
+                        "style": {"gap": "12px"},
+                    },
+                    "children": [
+                        # MITAD IZQUIERDA (60%): GEMELO 3D CON DESPIECE MECÁNICO (EXPLODED VIEW) + 5 PESTAÑAS DE CÓDIGO
+                        {
+                            "meta": {"name": "Exploded_3D_Guide_Panel"},
+                            "type": "ia.container.flex",
+                            "position": {"basis": "60%", "grow": 1},
+                            "props": {
+                                "direction": "column",
+                                "style": {
+                                    "backgroundColor": "#1E293B",
+                                    "borderRadius": "10px",
+                                    "border": "1px solid #38BDF8",
+                                    "padding": "10px 12px",
+                                    "gap": "6px",
+                                },
+                            },
+                            "children": [
+                                {
+                                    "meta": {"name": "Lbl_3D_Lab_Title"},
+                                    "type": "ia.display.label",
+                                    "position": {"basis": "22px", "shrink": 0},
+                                    "props": {
+                                        "text": "🔧 LABORATORIO 3D EN DESPIECE MECÁNICO (EXPLODED VIEW) + MANUAL INTERACTIVO EN 5 PESTAÑAS (PULSA '💥 DESPIECE MECÁNICO 3D')",
+                                        "style": {
+                                            "color": "#38BDF8",
+                                            "fontSize": "12px",
+                                            "fontWeight": "800",
+                                            "letterSpacing": "0.03em",
+                                        },
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "Iframe_Guia_3D"},
+                                    "type": "ia.display.iframe",
+                                    "position": {"basis": "640px", "grow": 1},
+                                    "propConfig": {
+                                        "props.src": {
+                                            "binding": {
+                                                "type": "expr",
+                                                "config": {
+                                                    "expression": guia_iframe_expr,
+                                                },
+                                            }
+                                        }
+                                    },
+                                    "props": {
+                                        "style": {
+                                            "width": "100%",
+                                            "height": "100%",
+                                            "borderRadius": "8px",
+                                            "border": "1px solid #334155",
+                                            "backgroundColor": "#090E1A",
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                        # MITAD DERECHA (40%): INSPECTOR EN VIVO DEL JSON DE NAMED QUERIES + GRÁFICA DE TENDENCIA
+                        {
+                            "meta": {"name": "NQ_Live_Inspector_Panel"},
+                            "type": "ia.container.flex",
+                            "position": {"basis": "40%", "grow": 1},
+                            "props": {
+                                "direction": "column",
+                                "style": {
+                                    "backgroundColor": "#1E293B",
+                                    "borderRadius": "10px",
+                                    "border": "1px solid #334155",
+                                    "padding": "10px 12px",
+                                    "gap": "8px",
+                                },
+                            },
+                            "children": [
+                                {
+                                    "meta": {"name": "Lbl_NQ_Inspector_Title"},
+                                    "type": "ia.display.label",
+                                    "position": {"basis": "22px", "shrink": 0},
+                                    "props": {
+                                        "text": "🔍 INSPECTOR EN VIVO: SALIDA JSON DEL NAMED QUERY (CMAPSS/turbofan_kpis)",
+                                        "style": {
+                                            "color": "#F59E0B",
+                                            "fontSize": "12px",
+                                            "fontWeight": "800",
+                                            "letterSpacing": "0.03em",
+                                        },
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "Lbl_NQ_Inspector_Sub"},
+                                    "type": "ia.display.label",
+                                    "position": {"basis": "32px", "shrink": 0},
+                                    "propConfig": {
+                                        "props.text": {
+                                            "binding": {
+                                                "type": "expr",
+                                                "config": {
+                                                    "expression": (
+                                                        'concat("Parámetros enviados ahora mismo -> assetId=\'", {view.custom.selectedAsset}, '
+                                                        '"\', simCycle=\'", {view.custom.simCycle}, "\' | Fila devuelta en view.custom.kpis[0]:")'
+                                                    )
+                                                },
+                                            }
+                                        }
+                                    },
+                                    "props": {
+                                        "style": {
+                                            "color": "#CBD5E1",
+                                            "fontSize": "11px",
+                                            "fontFamily": "JetBrains Mono, Consolas, monospace",
+                                        }
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "Table_Raw_KPI_Query"},
+                                    "type": "ia.display.table",
+                                    "position": {"basis": "115px", "shrink": 0},
+                                    "propConfig": {
+                                        "props.data": {
+                                            "binding": {
+                                                "type": "property",
+                                                "config": {
+                                                    "path": "view.custom.kpis",
+                                                },
+                                            }
+                                        }
+                                    },
+                                    "props": {
+                                        "pager": {"bottom": False},
+                                        "style": {
+                                            "backgroundColor": "#0F172A",
+                                            "color": "#38BDF8",
+                                            "borderRadius": "8px",
+                                            "fontSize": "11px",
+                                        },
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "Lbl_Chart_Guia_Title"},
+                                    "type": "ia.display.label",
+                                    "position": {"basis": "22px", "shrink": 0},
+                                    "props": {
+                                        "text": "📈 GRÁFICA EN VIVO DEL NAMED QUERY (CMAPSS/telemetry_trend HASTA :simCycle)",
+                                        "style": {
+                                            "color": "#10B981",
+                                            "fontSize": "12px",
+                                            "fontWeight": "800",
+                                            "letterSpacing": "0.03em",
+                                        },
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "TimeSeriesChart_Guia"},
+                                    "type": "ia.chart.timeseries",
+                                    "position": {"basis": "240px", "grow": 1},
+                                    "propConfig": {
+                                        "props.series[0].data": {
+                                            "binding": {
+                                                "type": "query",
+                                                "config": {
+                                                    "parameters": {
+                                                        "assetId": "{view.custom.selectedAsset}",
+                                                        "startCycle": "1",
+                                                        "endCycle": "{view.custom.simCycle}",
+                                                    },
+                                                    "queryPath": "CMAPSS/telemetry_trend",
+                                                },
+                                            }
+                                        }
+                                    },
+                                    "props": {
+                                        "series": [{"name": "DegradacionTermica"}],
+                                        "style": {
+                                            "backgroundColor": "#0F172A",
+                                            "borderRadius": "8px",
+                                            "padding": "6px",
+                                        },
+                                    },
+                                },
+                                {
+                                    "meta": {"name": "Table_Sensors_Guia"},
+                                    "type": "ia.display.table",
+                                    "position": {"basis": "185px", "grow": 1},
+                                    "propConfig": {
+                                        "props.data": {
+                                            "binding": {
+                                                "type": "query",
+                                                "config": {
+                                                    "parameters": {
+                                                        "assetId": "{view.custom.selectedAsset}"
+                                                    },
+                                                    "queryPath": "CMAPSS/latest_sensors",
+                                                },
+                                            }
+                                        }
+                                    },
+                                    "props": {
+                                        "pager": {"bottom": False},
+                                        "rows": {"striped": True},
+                                        "style": {
+                                            "backgroundColor": "#0F172A",
+                                            "color": "#E2E8F0",
+                                            "borderRadius": "8px",
+                                            "fontSize": "11px",
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    }
+
+
 def deploy_perspective_hmi(
     container_name: str = "twin-ignition",
     project: str = "DigitalTwin",
     view_name: str = "Turbofan_Overview",
 ) -> dict[str, Any]:
-    """Despliega la vista HMI con el Dibujo Animado SVG del Turbofan y el Simulador de Ciclo (:simCycle)."""
+    """Despliega la vista operativa (`Turbofan_Overview` en `/`) y la vista educativa (`Arquitectura_Guia` en `/guia`)."""
     view_payload = generate_isa101_perspective_view()
     SCADA_DIR.mkdir(parents=True, exist_ok=True)
     local_view_path = SCADA_DIR / "view.json"
     with open(local_view_path, "w", encoding="utf-8") as f:
         json.dump(view_payload, f, ensure_ascii=False, indent=2)
+
+    # Generar también la nueva vista educativa Arquitectura_Guia (/guia)
+    guia_payload = generate_architecture_guide_view()
+    local_guia_view_path = SCADA_DIR / "guia_view.json"
+    with open(local_guia_view_path, "w", encoding="utf-8") as f:
+        json.dump(guia_payload, f, ensure_ascii=False, indent=2)
+
+    guia_resource = {
+        "scope": "G",
+        "version": 1,
+        "restricted": False,
+        "overridable": True,
+        "files": ["view.json"],
+        "attributes": {
+            "lastModificationSignature": "23e315a966e13a086a58eca446614337d096b9523717aa33a509cc1e16309a8c",
+            "lastModification": {
+                "actor": "admin",
+                "timestamp": "2026-10-26T23:55:00Z",
+            },
+        },
+    }
+    local_guia_res_path = SCADA_DIR / "guia_resource.json"
+    with open(local_guia_res_path, "w", encoding="utf-8") as f:
+        json.dump(guia_resource, f, indent=2)
+
+    page_config = {
+        "pages": {
+            "/": {"viewPath": "Turbofan_Overview"},
+            "/guia": {"viewPath": "Arquitectura_Guia"},
+        },
+        "sharedDocks": {"cornerPriority": "top-bottom"},
+    }
+    local_page_cfg_path = SCADA_DIR / "page_config.json"
+    with open(local_page_cfg_path, "w", encoding="utf-8") as f:
+        json.dump(page_config, f, indent=2)
 
     # SQL de turbofan_kpis parametrizado por :simCycle para simular la degradación ciclo a ciclo
     upgraded_kpi_sql = """WITH latest_seq AS (
@@ -1378,9 +2168,25 @@ GROUP BY t.asset_id, t.sequence_no;
     with open(local_kpi_res_path, "w", encoding="utf-8") as f:
         json.dump(kpi_resource, f, indent=2)
 
+    guia_dir_in_container = (
+        f"/usr/local/bin/ignition/data/projects/{project}/"
+        "com.inductiveautomation.perspective/views/Arquitectura_Guia"
+    )
+    subprocess.run(
+        ["docker", "exec", container_name, "mkdir", "-p", guia_dir_in_container],
+        capture_output=True,
+        text=True,
+    )
+
     container_view_path = (
         f"{container_name}:/usr/local/bin/ignition/data/projects/{project}/"
         f"com.inductiveautomation.perspective/views/{view_name}/view.json"
+    )
+    container_guia_view_path = f"{container_name}:{guia_dir_in_container}/view.json"
+    container_guia_res_path = f"{container_name}:{guia_dir_in_container}/resource.json"
+    container_page_cfg_path = (
+        f"{container_name}:/usr/local/bin/ignition/data/projects/{project}/"
+        "com.inductiveautomation.perspective/page-config/config.json"
     )
     container_sql_path = (
         f"{container_name}:/usr/local/bin/ignition/data/projects/{project}/"
@@ -1393,6 +2199,9 @@ GROUP BY t.asset_id, t.sequence_no;
 
     for src_p, dst_p in [
         (local_view_path, container_view_path),
+        (local_guia_view_path, container_guia_view_path),
+        (local_guia_res_path, container_guia_res_path),
+        (local_page_cfg_path, container_page_cfg_path),
         (local_sql_path, container_sql_path),
         (local_kpi_res_path, container_kpi_res_path),
     ]:
@@ -1405,7 +2214,9 @@ GROUP BY t.asset_id, t.sequence_no;
         "container": container_name,
         "project": project,
         "view_name": view_name,
+        "guide_view_name": "Arquitectura_Guia",
         "perspective_url": f"http://localhost:8089/data/perspective/client/{project}",
+        "guide_url": f"http://localhost:8089/data/perspective/client/{project}/guia",
         "deployed_at": datetime.now(timezone.utc).isoformat(),
     }
 
