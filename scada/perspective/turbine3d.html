@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gemelo Digital 3D Turbofan — NASA C-MAPSS</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body, html {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 45%, #162238 0%, #090e1a 100%);
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+      color: #f8fafc;
+    }
+    #canvas-container { width: 100%; height: 100%; position: relative; }
+    
+    /* HUD Top Overlay */
+    .hud-top {
+      position: absolute; top: 8px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      pointer-events: none; z-index: 10;
+    }
+    .hud-badge {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155;
+      border-left: 3px solid #38bdf8;
+      padding: 5px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+      backdrop-filter: blur(4px);
+      display: flex; gap: 12px; align-items: center;
+    }
+    .hud-controls {
+      display: flex; gap: 6px; pointer-events: auto;
+    }
+    .btn {
+      background: rgba(30, 41, 59, 0.9);
+      color: #e2e8f0; border: 1px solid #475569;
+      padding: 5px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { background: #334155; border-color: #38bdf8; color: #fff; }
+    .btn.active { background: #0284c7; border-color: #38bdf8; color: #fff; }
+    .btn-play { background: #059669; border-color: #10b981; color: #fff; }
+    .btn-play.playing { background: #dc2626; border-color: #f87171; }
+
+    /* 3D Floating Callout Labels */
+    .callout {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid #38bdf8;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 10.5px;
+      line-height: 1.25;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+      transition: border-color 0.25s, box-shadow 0.25s;
+      z-index: 5;
+    }
+    .callout .stage-name {
+      font-weight: 800; color: #94a3b8; font-size: 9.5px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .callout .sensor-val {
+      font-weight: 800; color: #f8fafc; font-size: 11.5px;
+    }
+    .callout.warn {
+      border-color: #f59e0b;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+    }
+    .callout.crit {
+      border-color: #ef4444;
+      background: rgba(69, 10, 10, 0.9);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.7);
+    }
+
+    /* Bottom Status Bar */
+    .hud-bottom {
+      position: absolute; bottom: 8px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155; border-radius: 6px;
+      padding: 5px 12px; font-size: 11px; z-index: 10;
+    }
+    .hint { color: #94a3b8; font-weight: 600; }
+    .sim-status { display: flex; gap: 14px; font-weight: 800; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div id="canvas-container">
+    <!-- Top HUD -->
+    <div class="hud-top">
+      <div class="hud-badge">
+        <span style="color:#38bdf8">● OPCIÓN B: GEMELO 3D WEBGL (60 FPS)</span>
+        <span id="hud-asset">MOTOR: cmapss_1</span>
+        <span id="hud-cycle">CICLO: 192</span>
+        <span id="hud-rul" style="color:#f87171">RUL: 5.0 cic</span>
+      </div>
+      <div class="hud-controls">
+        <button id="btn-play" class="btn btn-play" onclick="toggleAutoPlay()">▶ SIMULAR DESGASTE (1→192)</button>
+        <button id="btn-xray" class="btn active" onclick="toggleXRay()">🔍 CORTE SECCIONAL</button>
+        <button class="btn" onclick="setCameraView('iso')">🎥 ISO</button>
+        <button class="btn" onclick="setCameraView('side')">🎥 LATERAL</button>
+        <button class="btn" onclick="setCameraView('front')">🎥 FRONTAL</button>
+      </div>
+    </div>
+
+    <!-- 3D Floating Sensor Callouts -->
+    <div id="lbl-fan" class="callout">
+      <div class="stage-name">1. FAN ADMISIÓN</div>
+      <div class="sensor-val" id="val-fan">Nf: 2388.2 rpm</div>
+    </div>
+    <div id="lbl-lpc" class="callout">
+      <div class="stage-name">2. COMP. LPC</div>
+      <div class="sensor-val" id="val-lpc">T24: 643.5 °R</div>
+    </div>
+    <div id="lbl-hpc" class="callout">
+      <div class="stage-name">3. COMP. HPC ★ (52% IA)</div>
+      <div class="sensor-val" id="val-hpc">Ps30: 48.10 psia</div>
+    </div>
+    <div id="lbl-comb" class="callout">
+      <div class="stage-name">4. COMBUSTOR / EJE</div>
+      <div class="sensor-val" id="val-comb">Nc: 9080 rpm</div>
+    </div>
+    <div id="lbl-lpt" class="callout">
+      <div class="stage-name">5. TURBINA LPT ★</div>
+      <div class="sensor-val" id="val-lpt">T50: 1432.5 °R</div>
+    </div>
+
+    <!-- Bottom HUD -->
+    <div class="hud-bottom">
+      <div class="hint">🖱️ Arrastra para rotar 360°  |  Rueda del ratón para Zoom</div>
+      <div class="sim-status">
+        <span id="hud-health" style="color:#f87171">ESTADO: CRÍTICO — SOBREPRESIÓN HPC & FATIGA TÉRMICA LPT</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Estado en vivo sincronizado con Ignition Perspective (vía #hash) o con Auto-Play
+    const state = {
+      asset: 'cmapss_1',
+      cycle: 192,
+      rul: 5.0,
+      s8: 2388.26,
+      s2: 643.54,
+      s11: 48.10,
+      s9: 9079.9,
+      s4: 1432.5,
+      status: 'Critico',
+      xray: true,
+      playing: false,
+      baseEndCycle: 192,
+      baseEndRul: 5.0,
+      baseEndS11: 48.10,
+      baseEndS4: 1432.5,
+      baseEndS2: 643.54,
+      baseEndS9: 9080.0
+    };
+
+    function parseHashParams() {
+      const raw = window.location.hash.replace(/^#/, '') || window.location.search.replace(/^\?/, '');
+      if (!raw) return;
+      const params = new URLSearchParams(raw);
+      if (params.get('asset')) state.asset = params.get('asset');
+      if (params.get('cycle')) state.cycle = parseFloat(params.get('cycle')) || 192;
+      if (params.get('rul')) state.rul = parseFloat(params.get('rul')) || 5.0;
+      if (params.get('s11')) state.s11 = parseFloat(params.get('s11')) || 47.6;
+      if (params.get('s4')) state.s4 = parseFloat(params.get('s4')) || 1410.0;
+      if (params.get('s2')) state.s2 = parseFloat(params.get('s2')) || 642.5;
+      if (params.get('s8')) state.s8 = parseFloat(params.get('s8')) || 2388.1;
+      if (params.get('s9')) state.s9 = parseFloat(params.get('s9')) || 9055.0;
+      if (params.get('status')) state.status = params.get('status');
+      updateHUDAndMaterials();
+    }
+    window.addEventListener('hashchange', parseHashParams);
+
+    // ==================== ESCENA THREE.JS ====================
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(1.5, 4.2, 13.8);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Iluminación Industrial Metálica
+    scene.add(new THREE.AmbientLight(0x94a3b8, 0.75));
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.15);
+    dirLight1.position.set(8, 12, 10);
+    scene.add(dirLight1);
+    const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 0.55);
+    dirLight2.position.set(-10, -6, 6);
+    scene.add(dirLight2);
+    const combustorLight = new THREE.PointLight(0xf97316, 2.2, 7);
+    combustorLight.position.set(1.0, 0, 0);
+    scene.add(combustorLight);
+
+    const engineGroup = new THREE.Group();
+    scene.add(engineGroup);
+
+    // Materiales Dinámicos
+    const matShaft = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.85, roughness: 0.2 });
+    const matFan = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7, roughness: 0.25, emissive: 0x0284c7, emissiveIntensity: 0.2 });
+    const matLPC = new THREE.MeshStandardMaterial({ color: 0x10b981, metalness: 0.65, roughness: 0.3, emissive: 0x059669, emissiveIntensity: 0.25 });
+    const matHPC = new THREE.MeshStandardMaterial({ color: 0x10b981, metalness: 0.7, roughness: 0.28, emissive: 0xdc2626, emissiveIntensity: 0.4 });
+    const matComb = new THREE.MeshStandardMaterial({ color: 0xf97316, metalness: 0.4, roughness: 0.4, emissive: 0xea580c, emissiveIntensity: 0.8, transparent: true, opacity: 0.88 });
+    const matLPT = new THREE.MeshStandardMaterial({ color: 0x10b981, metalness: 0.7, roughness: 0.28, emissive: 0xdc2626, emissiveIntensity: 0.4 });
+    const matCasing = new THREE.MeshStandardMaterial({
+      color: 0x475569, metalness: 0.8, roughness: 0.3,
+      side: THREE.DoubleSide, transparent: true, opacity: 0.55
+    });
+
+    // 1. Eje Principal (Core Shaft a lo largo del eje X: -4.8 a +4.8)
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 9.6, 28), matShaft);
+    shaft.rotation.z = Math.PI / 2;
+    engineGroup.add(shaft);
+
+    // Función constructora de Rotores con Álabes 3D
+    function createBladedRotor(xPos, innerR, outerR, numBlades, bladeWidth, tiltAngle, material) {
+      const rotor = new THREE.Group();
+      rotor.position.x = xPos;
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(innerR, innerR, bladeWidth * 1.2, 24), matShaft);
+      hub.rotation.z = Math.PI / 2;
+      rotor.add(hub);
+
+      const bladeGeo = new THREE.BoxGeometry(bladeWidth, outerR - innerR, 0.14);
+      for (let i = 0; i < numBlades; i++) {
+        const angle = (i / numBlades) * Math.PI * 2;
+        const pivot = new THREE.Group();
+        pivot.rotation.x = angle;
+        const blade = new THREE.Mesh(bladeGeo, material);
+        blade.position.y = innerR + (outerR - innerR) / 2;
+        blade.rotation.y = tiltAngle;
+        pivot.add(blade);
+        rotor.add(pivot);
+      }
+      engineGroup.add(rotor);
+      return rotor;
+    }
+
+    // Ojiva frontal (Spinner Cone)
+    const spinner = new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.35, 32), matFan);
+    spinner.rotation.z = Math.PI / 2;
+    spinner.position.x = -4.65;
+    engineGroup.add(spinner);
+
+    // Rotores por Etapa Mecánica
+    const rotorsFan = [
+      createBladedRotor(-3.8, 0.72, 2.35, 22, 0.28, 0.42, matFan)
+    ];
+    const rotorsLPC = [
+      createBladedRotor(-2.7, 0.65, 1.75, 26, 0.18, 0.35, matLPC),
+      createBladedRotor(-2.2, 0.68, 1.65, 28, 0.18, 0.35, matLPC),
+      createBladedRotor(-1.7, 0.70, 1.55, 30, 0.18, 0.35, matLPC)
+    ];
+    const rotorsHPC = [
+      createBladedRotor(-0.9, 0.72, 1.42, 34, 0.15, 0.3, matHPC),
+      createBladedRotor(-0.5, 0.74, 1.38, 36, 0.15, 0.3, matHPC),
+      createBladedRotor(-0.1, 0.76, 1.34, 38, 0.15, 0.3, matHPC),
+      createBladedRotor(0.3, 0.78, 1.30, 40, 0.15, 0.3, matHPC)
+    ];
+
+    // Cámara de Combustión Anular (x = +1.25)
+    const combustorRing = new THREE.Mesh(new THREE.CylinderGeometry(1.28, 1.28, 1.15, 32, 1, true), matComb);
+    combustorRing.rotation.z = Math.PI / 2;
+    combustorRing.position.x = 1.25;
+    engineGroup.add(combustorRing);
+
+    // Rotores Turbina LPT (x = +2.3 a +3.5)
+    const rotorsLPT = [
+      createBladedRotor(2.3, 0.72, 1.38, 34, 0.16, -0.35, matLPT),
+      createBladedRotor(2.85, 0.68, 1.55, 32, 0.18, -0.35, matLPT),
+      createBladedRotor(3.45, 0.62, 1.75, 30, 0.20, -0.35, matLPT)
+    ];
+
+    // Cono de Escape Trasero
+    const exhaustCone = new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.6, 28), matShaft);
+    exhaustCone.rotation.z = -Math.PI / 2;
+    exhaustCone.position.x = 4.4;
+    engineGroup.add(exhaustCone);
+
+    // Carcasa Exterior Seccional (Cutaway Nacelle - medio cilindro para ver el interior)
+    const nacelleGeo = new THREE.CylinderGeometry(2.48, 1.95, 8.2, 40, 1, true, Math.PI * 0.15, Math.PI * 1.15);
+    const nacelle = new THREE.Mesh(nacelleGeo, matCasing);
+    nacelle.rotation.z = Math.PI / 2;
+    nacelle.position.x = -0.2;
+    engineGroup.add(nacelle);
+
+    // Anillos Estructurales de la Góndola
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8, roughness: 0.2 });
+    [-4.1, -1.3, 0.65, 2.0, 3.85].forEach((rx, idx) => {
+      const r = idx === 0 ? 2.45 : (idx === 4 ? 1.95 : 2.15);
+      const torus = new THREE.Mesh(new THREE.TorusGeometry(r, 0.035, 12, 48), ringMat);
+      torus.rotation.y = Math.PI / 2;
+      torus.position.x = rx;
+      engineGroup.add(torus);
+    });
+
+    // ==================== SISTEMA DE PARTÍCULAS DE FLUJO TERMODINÁMICO ====================
+    const PARTICLE_COUNT = 320;
+    const pGeo = new THREE.BufferGeometry();
+    const pPositions = new Float32Array(PARTICLE_COUNT * 3);
+    const pColors = new Float32Array(PARTICLE_COUNT * 3);
+    const pSpeeds = new Float32Array(PARTICLE_COUNT);
+
+    function resetParticle(i, randomX = false) {
+      const x = randomX ? (-4.8 + Math.random() * 10.2) : -4.8;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 0.78 + Math.random() * 1.15;
+      pPositions[i * 3] = x;
+      pPositions[i * 3 + 1] = Math.cos(angle) * radius;
+      pPositions[i * 3 + 2] = Math.sin(angle) * radius;
+      pSpeeds[i] = 0.07 + Math.random() * 0.06;
+    }
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) resetParticle(i, true);
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+    pGeo.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+
+    const pMat = new THREE.PointsMaterial({ size: 0.13, vertexColors: true, transparent: true, opacity: 0.85 });
+    const particleSystem = new THREE.Points(pGeo, pMat);
+    engineGroup.add(particleSystem);
+
+    // Puntos 3D de Anclaje para los Callouts de Sensores
+    const anchors = [
+      { id: 'lbl-fan', pos: new THREE.Vector3(-3.8, 2.45, 0) },
+      { id: 'lbl-lpc', pos: new THREE.Vector3(-2.2, -1.95, 0) },
+      { id: 'lbl-hpc', pos: new THREE.Vector3(-0.3, 1.85, 0) },
+      { id: 'lbl-comb', pos: new THREE.Vector3(1.25, -1.85, 0) },
+      { id: 'lbl-lpt', pos: new THREE.Vector3(2.95, 2.05, 0) }
+    ];
+
+    // Actualización de Colores de Desgaste y Textos HUD según Estado
+    function updateHUDAndMaterials() {
+      document.getElementById('hud-asset').textContent = `MOTOR: ${state.asset}`;
+      document.getElementById('hud-cycle').textContent = `CICLO: ${Math.round(state.cycle)}`;
+      document.getElementById('hud-rul').textContent = `RUL: ${state.rul.toFixed(1)} cic`;
+
+      document.getElementById('val-fan').textContent = `Nf: ${state.s8.toFixed(1)} rpm`;
+      document.getElementById('val-lpc').textContent = `T24: ${state.s2.toFixed(1)} °R`;
+      document.getElementById('val-hpc').textContent = `Ps30: ${state.s11.toFixed(2)} psia`;
+      document.getElementById('val-comb').textContent = `Nc: ${state.s9.toFixed(0)} rpm`;
+      document.getElementById('val-lpt').textContent = `T50: ${state.s4.toFixed(1)} °R`;
+
+      // Color LPC (s2)
+      const lpcEl = document.getElementById('lbl-lpc');
+      if (state.s2 >= 643.4) {
+        matLPC.color.setHex(0xef4444); matLPC.emissive.setHex(0xdc2626); matLPC.emissiveIntensity = 0.55;
+        lpcEl.className = 'callout crit';
+      } else if (state.s2 >= 642.8) {
+        matLPC.color.setHex(0xf59e0b); matLPC.emissive.setHex(0xd97706); matLPC.emissiveIntensity = 0.4;
+        lpcEl.className = 'callout warn';
+      } else {
+        matLPC.color.setHex(0x10b981); matLPC.emissive.setHex(0x059669); matLPC.emissiveIntensity = 0.2;
+        lpcEl.className = 'callout';
+      }
+
+      // Color HPC (s11 - 52% IA)
+      const hpcEl = document.getElementById('lbl-hpc');
+      if (state.s11 >= 47.85) {
+        matHPC.color.setHex(0xef4444); matHPC.emissive.setHex(0xdc2626); matHPC.emissiveIntensity = 0.75;
+        hpcEl.className = 'callout crit';
+      } else if (state.s11 >= 47.55) {
+        matHPC.color.setHex(0xf59e0b); matHPC.emissive.setHex(0xd97706); matHPC.emissiveIntensity = 0.45;
+        hpcEl.className = 'callout warn';
+      } else {
+        matHPC.color.setHex(0x10b981); matHPC.emissive.setHex(0x059669); matHPC.emissiveIntensity = 0.2;
+        hpcEl.className = 'callout';
+      }
+
+      // Color LPT (s4)
+      const lptEl = document.getElementById('lbl-lpt');
+      const healthEl = document.getElementById('hud-health');
+      const rulEl = document.getElementById('hud-rul');
+      if (state.s4 >= 1418.0 || state.rul <= 25) {
+        matLPT.color.setHex(0xef4444); matLPT.emissive.setHex(0xdc2626); matLPT.emissiveIntensity = 0.75;
+        lptEl.className = 'callout crit';
+        rulEl.style.color = '#f87171';
+        healthEl.style.color = '#f87171';
+        healthEl.textContent = '🔴 ESTADO CRÍTICO — SOBREPRESIÓN EN HPC (s11) Y FATIGA TÉRMICA EN TURBINA LPT (s4)';
+      } else if (state.s4 >= 1408.0 || state.rul <= 60) {
+        matLPT.color.setHex(0xf59e0b); matLPT.emissive.setHex(0xd97706); matLPT.emissiveIntensity = 0.45;
+        lptEl.className = 'callout warn';
+        rulEl.style.color = '#fbbf24';
+        healthEl.style.color = '#fbbf24';
+        healthEl.textContent = '🟠 ESTADO ALERTA — DERIVA TERMODINÁMICA DETECTADA EN COMPRESOR HPC Y LPT';
+      } else {
+        matLPT.color.setHex(0x10b981); matLPT.emissive.setHex(0x059669); matLPT.emissiveIntensity = 0.2;
+        lptEl.className = 'callout';
+        rulEl.style.color = '#4ade80';
+        healthEl.style.color = '#4ade80';
+        healthEl.textContent = '🟢 OPERACIÓN NOMINAL — TODAS LAS ETAPAS MECÁNICAS DENTRO DE PARÁMETROS';
+      }
+    }
+
+    // ==================== CONTROL DE CÁMARA ORBITAL CON MOUSE ====================
+    let isDragging = false, prevX = 0, prevY = 0;
+    let rotY = 0.22, rotX = 0.14;
+    engineGroup.rotation.y = rotY;
+    engineGroup.rotation.x = rotX;
+
+    renderer.domElement.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      rotY += (e.clientX - prevX) * 0.008;
+      rotX = Math.max(-0.8, Math.min(0.8, rotX + (e.clientY - prevY) * 0.008));
+      engineGroup.rotation.y = rotY;
+      engineGroup.rotation.x = rotX;
+      prevX = e.clientX; prevY = e.clientY;
+    });
+    renderer.domElement.addEventListener('wheel', e => {
+      camera.position.z = Math.max(7.5, Math.min(22, camera.position.z + e.deltaY * 0.008));
+    });
+
+    function setCameraView(mode) {
+      if (mode === 'iso') { rotY = 0.48; rotX = 0.22; camera.position.z = 13.5; }
+      else if (mode === 'side') { rotY = 0.0; rotX = 0.05; camera.position.z = 13.0; }
+      else if (mode === 'front') { rotY = 1.35; rotX = 0.1; camera.position.z = 12.0; }
+      engineGroup.rotation.y = rotY;
+      engineGroup.rotation.x = rotX;
+    }
+
+    function toggleXRay() {
+      state.xray = !state.xray;
+      nacelle.visible = state.xray;
+      matCasing.opacity = state.xray ? 0.55 : 0.95;
+      document.getElementById('btn-xray').classList.toggle('active', state.xray);
+    }
+
+    // ==================== SIMULADOR AUTO-PLAY DE DEGRADACIÓN ====================
+    let simTimer = null;
+    function toggleAutoPlay() {
+      state.playing = !state.playing;
+      const btn = document.getElementById('btn-play');
+      if (state.playing) {
+        btn.textContent = '⏸ PAUSAR SIMULACIÓN';
+        btn.classList.add('playing');
+        state.cycle = 1;
+        simTimer = setInterval(() => {
+          state.cycle += 2;
+          if (state.cycle > 192) state.cycle = 1;
+          const progress = state.cycle / 192.0;
+          const nonLinear = Math.pow(progress, 1.85);
+          state.rul = Math.min(125, Math.max(5.0, 5.0 + (192 - state.cycle)));
+          state.s2 = 641.8 + nonLinear * 1.85;
+          state.s11 = 47.20 + nonLinear * 0.95;
+          state.s4 = 1398.0 + nonLinear * 35.0;
+          state.s9 = 9048.0 + nonLinear * 34.0;
+          state.s8 = 2388.02 + nonLinear * 0.24;
+          updateHUDAndMaterials();
+        }, 110);
+      } else {
+        btn.textContent = '▶ SIMULAR DESGASTE (1→192)';
+        btn.classList.remove('playing');
+        clearInterval(simTimer);
+      }
+    }
+
+    // ==================== BUCLE DE ANIMACIÓN 60 FPS ====================
+    let clock = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      clock += 0.04;
+
+      // Velocidad de giro proporcional al estrés / RPM
+      const speedFactor = 1.0 + (state.s11 - 47.2) * 0.6;
+      rotorsFan.forEach(r => { r.rotation.x += 0.055 * speedFactor; });
+      rotorsLPC.forEach(r => { r.rotation.x += 0.075 * speedFactor; });
+      rotorsHPC.forEach(r => { r.rotation.x += 0.115 * speedFactor; });
+      rotorsLPT.forEach(r => { r.rotation.x += 0.105 * speedFactor; });
+
+      // Pulsación de la llama del combustor
+      combustorRing.scale.set(1.0, 0.97 + Math.sin(clock * 3.5) * 0.04, 0.97 + Math.cos(clock * 3.5) * 0.04);
+      combustorLight.intensity = 1.8 + Math.sin(clock * 5.0) * 0.6;
+
+      // Actualizar partículas de flujo termodinámico
+      const posAttr = pGeo.attributes.position;
+      const colAttr = pGeo.attributes.color;
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        let x = posAttr.array[i * 3] + pSpeeds[i] * speedFactor;
+        if (x > 5.4) {
+          resetParticle(i, false);
+          x = posAttr.array[i * 3];
+        } else {
+          posAttr.array[i * 3] = x;
+        }
+        // Color termodinámico según etapa (x):
+        // Admisión (-4.8..-1.5): Azul frío -> HPC (-1.5..+0.8): Amarillo/Cyan -> Combustor/LPT (+0.8..+5.4): Naranja/Rojo
+        if (x < -1.4) {
+          colAttr.array[i * 3] = 0.22; colAttr.array[i * 3 + 1] = 0.74; colAttr.array[i * 3 + 2] = 0.97;
+        } else if (x < 0.8) {
+          const isHotHPC = state.s11 >= 47.85;
+          colAttr.array[i * 3] = isHotHPC ? 0.98 : 0.96;
+          colAttr.array[i * 3 + 1] = isHotHPC ? 0.35 : 0.75;
+          colAttr.array[i * 3 + 2] = 0.15;
+        } else {
+          const isCritLPT = state.s4 >= 1418.0;
+          colAttr.array[i * 3] = 0.98;
+          colAttr.array[i * 3 + 1] = isCritLPT ? 0.22 : 0.48;
+          colAttr.array[i * 3 + 2] = isCritLPT ? 0.18 : 0.12;
+        }
+      }
+      posAttr.needsUpdate = true;
+      colAttr.needsUpdate = true;
+
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+
+      // Proyectar coordenadas 3D a etiquetas HTML flotantes
+      anchors.forEach(a => {
+        const v = a.pos.clone();
+        v.applyMatrix4(engineGroup.matrixWorld);
+        v.project(camera);
+        const x = (v.x * 0.5 + 0.5) * container.clientWidth;
+        const y = (-(v.y * 0.5) + 0.5) * container.clientHeight;
+        const el = document.getElementById(a.id);
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    parseHashParams();
+    animate();
+  </script>
+</body>
+</html>

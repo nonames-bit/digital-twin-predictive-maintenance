@@ -1,0 +1,45 @@
+{
+  "scope": "DG",
+  "version": 2,
+  "restricted": false,
+  "overridable": true,
+  "files": [
+    "query.sql"
+  ],
+  "attributes": {
+    "useMaxReturnSize": false,
+    "autoBatchEnabled": false,
+    "fallbackValue": "",
+    "maxReturnSize": 100,
+    "cacheUnit": "SEC",
+    "type": "Query",
+    "enabled": true,
+    "cacheAmount": 1,
+    "cacheEnabled": false,
+    "database": "twin",
+    "fallbackEnabled": false,
+    "lastModificationSignature": "390c212f90e695183c448ba83c9733ac2c017587b3f18fae4471ad66047354c7",
+    "permissions": [
+      {
+        "zone": "",
+        "role": ""
+      }
+    ],
+    "lastModification": {
+      "actor": "admin",
+      "timestamp": "2026-10-26T23:45:00Z"
+    },
+    "parameters": [
+      {
+        "type": "Parameter",
+        "identifier": "assetId",
+        "sqlType": 7
+      },
+      {
+        "type": "Parameter",
+        "identifier": "simCycle",
+        "sqlType": 2
+      }
+    ]
+  }
+}

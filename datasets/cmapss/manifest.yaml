@@ -8,3 +8,28 @@ columns:
   cycle: cycle
   settings: [setting1, setting2, setting3]
   sensors: [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21]
+descriptions:
+  setting1: "Altitud de vuelo (Flight Altitude) [kft]"
+  setting2: "Número Mach de velocidad [Mach]"
+  setting3: "Ángulo del acelerador (Throttle Resolver Angle - TRA) [°]"
+  s1: "Temperatura total en la entrada del ventilador (T2) [°R]"
+  s2: "Temperatura total a la salida del LPC (T24) [°R]"
+  s3: "Temperatura total a la salida del HPC (T30) [°R]"
+  s4: "Temperatura total a la salida del LPT (T50) [°R]"
+  s5: "Presión en la entrada del ventilador (P2) [psia]"
+  s6: "Presión total en el ducto de bypass (P15) [psia]"
+  s7: "Presión total a la salida del HPC (P30) [psia]"
+  s8: "Velocidad física del ventilador (Nf) [rpm]"
+  s9: "Velocidad física del núcleo (Nc) [rpm]"
+  s10: "Relación de presión del motor (epr)"
+  s11: "Presión estática a la salida del HPC (Ps30) [psia]"
+  s12: "Relación entre flujo de combustible y Ps30 (phi) [pps/psia]"
+  s13: "Velocidad corregida del ventilador (NRf) [rpm]"
+  s14: "Velocidad corregida del núcleo (NRc) [rpm]"
+  s15: "Relación de bypass (BPR)"
+  s16: "Relación aire-combustible (farB)"
+  s17: "Entalpía purgada (htBleed)"
+  s18: "Demanda de velocidad del ventilador (PCNfR_dmd) [rpm]"
+  s19: "Demanda de velocidad corregida del núcleo (W31_dmd) [rpm]"
+  s20: "Flujo de purga de refrigerante de HPT (W32) [lbm/s]"
+  s21: "Flujo de purga de refrigerante de LPT (W33) [lbm/s]"

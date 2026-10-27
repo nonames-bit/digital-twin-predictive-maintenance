@@ -1,0 +1,1474 @@
+{
+  "custom": {
+    "selectedAsset": "cmapss_1",
+    "simCycle": 192
+  },
+  "params": {},
+  "propConfig": {
+    "custom.kpis": {
+      "binding": {
+        "type": "query",
+        "config": {
+          "parameters": {
+            "assetId": "{view.custom.selectedAsset}",
+            "simCycle": "{view.custom.simCycle}"
+          },
+          "queryPath": "CMAPSS/turbofan_kpis",
+          "returnFormat": "json"
+        }
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1600,
+      "height": 1120
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "type": "ia.container.flex",
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "#0B1120",
+        "color": "#F8FAFC",
+        "padding": "12px 18px",
+        "gap": "10px",
+        "fontFamily": "Inter, Segoe UI, Roboto, sans-serif"
+      }
+    },
+    "children": [
+      {
+        "meta": {
+          "name": "Header_Bar"
+        },
+        "type": "ia.container.flex",
+        "position": {
+          "basis": "60px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "row",
+          "justify": "space-between",
+          "alignItems": "center",
+          "style": {
+            "backgroundColor": "#1E293B",
+            "border": "1px solid #334155",
+            "borderRadius": "10px",
+            "padding": "8px 18px",
+            "boxShadow": "0 4px 14px rgba(0, 0, 0, 0.3)"
+          }
+        },
+        "children": [
+          {
+            "meta": {
+              "name": "Title_Block"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "520px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "center"
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Header_Title"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "22px"
+                },
+                "props": {
+                  "text": "✈️ GEMELO DIGITAL TURBOFAN — CENTRO DE CONTROL PREDICTIVO (NASA C-MAPSS)",
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "15px",
+                    "fontWeight": "800",
+                    "letterSpacing": "0.03em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Header_Sub"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "● SIMULADOR DE DEGRADACIÓN ACTIVO | TIMESCALEDB | XGBOOST + MAPIE CONFORMAL (91% COBERTURA)",
+                  "style": {
+                    "color": "#38BDF8",
+                    "fontSize": "11px",
+                    "fontWeight": "600",
+                    "letterSpacing": "0.04em"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Lbl_Prescriptive_Banner"
+            },
+            "type": "ia.display.label",
+            "position": {
+              "basis": "360px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "expr",
+                  "config": {
+                    "expression": "concat(\"⚡ RECOMENDACIÓN IA: \", upper({view.custom.kpis[0].prescriptive_action}))"
+                  }
+                }
+              },
+              "props.style.backgroundColor": {
+                "binding": {
+                  "type": "expr",
+                  "config": {
+                    "expression": "if({view.custom.kpis[0].prescriptive_action} = 'Parada Inmediata', '#991B1B', if({view.custom.kpis[0].prescriptive_action} = 'Mantenimiento Requerido', '#92400E', '#065F46'))"
+                  }
+                }
+              },
+              "props.style.borderColor": {
+                "binding": {
+                  "type": "expr",
+                  "config": {
+                    "expression": "if({view.custom.kpis[0].prescriptive_action} = 'Parada Inmediata', '#EF4444', if({view.custom.kpis[0].prescriptive_action} = 'Mantenimiento Requerido', '#F59E0B', '#10B981'))"
+                  }
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "color": "#FFFFFF",
+                "fontSize": "12px",
+                "fontWeight": "800",
+                "padding": "7px 14px",
+                "borderRadius": "8px",
+                "border": "1px solid #EF4444",
+                "textAlign": "center",
+                "marginRight": "18px",
+                "letterSpacing": "0.03em"
+              }
+            }
+          },
+          {
+            "meta": {
+              "name": "Dropdown"
+            },
+            "type": "ia.input.dropdown",
+            "position": {
+              "basis": "220px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "type": "query",
+                  "config": {
+                    "queryPath": "CMAPSS/active_assets",
+                    "returnFormat": "json"
+                  }
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "type": "property",
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.selectedAsset"
+                  }
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "#0F172A",
+                "color": "#F8FAFC",
+                "border": "1px solid #38BDF8",
+                "borderRadius": "8px",
+                "fontWeight": "700",
+                "fontSize": "14px"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "KPI_Row"
+        },
+        "type": "ia.container.flex",
+        "position": {
+          "basis": "98px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "row",
+          "justify": "space-between",
+          "wrap": "wrap"
+        },
+        "children": [
+          {
+            "meta": {
+              "name": "Card_Ciclo"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "195px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": "4px solid #64748B",
+                "padding": "8px 14px",
+                "margin": "3px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Titulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "Ciclo Evaluado",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.06em",
+                    "textTransform": "uppercase"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Valor"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "32px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat({view.custom.kpis[0].current_cycle}, \" vuelos\")"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "23px",
+                    "fontWeight": "800",
+                    "letterSpacing": "-0.01em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Subtitulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "15px"
+                },
+                "props": {
+                  "text": "Controlado por simulador",
+                  "style": {
+                    "color": "#64748B",
+                    "fontSize": "10px",
+                    "fontWeight": "500"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Card_RUL"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "195px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": "4px solid #38BDF8",
+                "padding": "8px 14px",
+                "margin": "3px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Titulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "Vida Útil Restante (RUL IA)",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.06em",
+                    "textTransform": "uppercase"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Valor"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "32px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(numberFormat({view.custom.kpis[0].rul_cycles}, \"0.0\"), \" ciclos\")"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "23px",
+                    "fontWeight": "800",
+                    "letterSpacing": "-0.01em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Subtitulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "15px"
+                },
+                "props": {
+                  "text": "Modelo XGBoost (Tope 125 ciclos)",
+                  "style": {
+                    "color": "#64748B",
+                    "fontSize": "10px",
+                    "fontWeight": "500"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Card_IC90"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "195px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": "4px solid #A855F7",
+                "padding": "8px 14px",
+                "margin": "3px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Titulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "Banda Conformal 90% (MAPIE)",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.06em",
+                    "textTransform": "uppercase"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Valor"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "32px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(\"[\", numberFormat({view.custom.kpis[0].rul_lower_90}, \"0.0\"), \" — \", numberFormat({view.custom.kpis[0].rul_upper_90}, \"0.0\"), \"] cic.\")"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "23px",
+                    "fontWeight": "800",
+                    "letterSpacing": "-0.01em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Subtitulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "15px"
+                },
+                "props": {
+                  "text": "Intervalo garantizado [Min - Max]",
+                  "style": {
+                    "color": "#64748B",
+                    "fontSize": "10px",
+                    "fontWeight": "500"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Card_Ps30_s11"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "195px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": "4px solid #0EA5E9",
+                "padding": "8px 14px",
+                "margin": "3px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Titulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "Presión Estática HPC (s11)",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.06em",
+                    "textTransform": "uppercase"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Valor"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "32px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(numberFormat({view.custom.kpis[0].hpc_static_press_s11}, \"0.00\"), \" psia\")"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "23px",
+                    "fontWeight": "800",
+                    "letterSpacing": "-0.01em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Subtitulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "15px"
+                },
+                "props": {
+                  "text": "Importancia IA: 52.1% | Umbral > 47.85 psia",
+                  "style": {
+                    "color": "#64748B",
+                    "fontSize": "10px",
+                    "fontWeight": "500"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Card_Temp_s4"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "195px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": "4px solid #F97316",
+                "padding": "8px 14px",
+                "margin": "3px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Titulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "Temp. Salida LPT (s4)",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.06em",
+                    "textTransform": "uppercase"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Valor"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "32px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(numberFormat({view.custom.kpis[0].lpt_temp_s4}, \"0.0\"), \" °R\")"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "23px",
+                    "fontWeight": "800",
+                    "letterSpacing": "-0.01em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Subtitulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "15px"
+                },
+                "props": {
+                  "text": "Importancia IA: 10.3% | Crítico >= 1418 °R",
+                  "style": {
+                    "color": "#64748B",
+                    "fontSize": "10px",
+                    "fontWeight": "500"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Card_Salud"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "195px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "borderTop": "4px solid #22C55E",
+                "padding": "8px 14px",
+                "margin": "3px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Titulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "16px"
+                },
+                "props": {
+                  "text": "Diagnóstico Operativo",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.06em",
+                    "textTransform": "uppercase"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Valor"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "32px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "property",
+                      "config": {
+                        "path": "view.custom.kpis[0].health_status"
+                      }
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "if({view.custom.kpis[0].health_status} = 'Critico', '#F87171', if({view.custom.kpis[0].health_status} = 'Alerta', '#FBBF24', '#4ADE80'))"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "23px",
+                    "fontWeight": "800",
+                    "letterSpacing": "-0.01em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Subtitulo"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "15px"
+                },
+                "props": {
+                  "text": "Clasificación ISA-101 en vivo",
+                  "style": {
+                    "color": "#64748B",
+                    "fontSize": "10px",
+                    "fontWeight": "500"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "Turbofan_Synoptic_Container"
+        },
+        "type": "ia.container.flex",
+        "position": {
+          "basis": "325px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "#1E293B",
+            "borderRadius": "10px",
+            "border": "1px solid #334155",
+            "padding": "10px 16px",
+            "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)",
+            "gap": "8px"
+          }
+        },
+        "children": [
+          {
+            "meta": {
+              "name": "Synoptic_Header_Row"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "row",
+              "justify": "space-between",
+              "alignItems": "center",
+              "style": {
+                "gap": "14px"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Synoptic_Title"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "500px",
+                  "grow": 1
+                },
+                "props": {
+                  "text": "🔬 COMPARATIVA DE GEMELO VISUAL: [OPCIÓN A: PLANO CAD SVG 2D]  VS  [OPCIÓN B: VISOR 3D INTERACTIVO WEBGL]",
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "12px",
+                    "fontWeight": "800",
+                    "letterSpacing": "0.04em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Slider_Info"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "230px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(\"⏱️ SIMULAR CICLO DE VUELO: \", {view.custom.simCycle})"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#38BDF8",
+                    "fontSize": "12px",
+                    "fontWeight": "800",
+                    "textAlign": "right"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Slider_SimCycle"
+                },
+                "type": "ia.input.slider",
+                "position": {
+                  "basis": "320px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "type": "property",
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.simCycle"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "min": 1,
+                  "max": 192,
+                  "step": 1,
+                  "color": "#38BDF8"
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Dual_Comparison_Row"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "268px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "row",
+              "style": {
+                "gap": "12px"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "OptionA_SVG_CAD"
+                },
+                "type": "ia.display.image",
+                "position": {
+                  "basis": "48%",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.source": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 920 260' width='100%' height='100%' style='background:rgb(9,14,26);border-radius:8px;font-family:Segoe UI,sans-serif'><defs><linearGradient id='metalNacelle' x1='0%' y1='0%' x2='0%' y2='100%'><stop offset='0%' stop-color='rgb(148,163,184)'/><stop offset='45%' stop-color='rgb(71,85,105)'/><stop offset='100%' stop-color='rgb(30,41,59)'/></linearGradient><linearGradient id='chromeShaft' x1='0%' y1='0%' x2='0%' y2='100%'><stop offset='0%' stop-color='rgb(226,232,240)'/><stop offset='50%' stop-color='rgb(100,116,139)'/><stop offset='100%' stop-color='rgb(203,213,225)'/></linearGradient><path id='flowTop' d='M 20,76 Q 260,54 450,78 T 880,82' fill='none'/><path id='flowBot' d='M 20,184 Q 260,206 450,182 T 880,178' fill='none'/></defs><line x1='0' y1='130' x2='920' y2='130' stroke='rgb(30,41,59)' stroke-width='1.5' stroke-dasharray='8,6'/><line x1='115' y1='25' x2='115' y2='235' stroke='rgb(30,41,59)' stroke-width='1' stroke-dasharray='4,4'/><line x1='340' y1='25' x2='340' y2='235' stroke='rgb(30,41,59)' stroke-width='1' stroke-dasharray='4,4'/><line x1='615' y1='25' x2='615' y2='235' stroke='rgb(30,41,59)' stroke-width='1' stroke-dasharray='4,4'/><text x='14' y='20' fill='rgb(56,189,248)' font-size='11' font-weight='bold' letter-spacing='0.8'>● OPCIÓN A: PLANO CAD VECTORIAL 2D + PARTÍCULAS + PINES HUD</text><path d='M 45,44 Q 210,24 430,36 L 690,56 L 785,76 L 785,90 L 685,70 L 430,52 Q 210,40 55,58 Z' fill='url(%23metalNacelle)' stroke='rgb(148,163,184)' stroke-width='1.5'/><path d='M 45,216 Q 210,236 430,224 L 690,204 L 785,184 L 785,170 L 685,190 L 430,208 Q 210,220 55,202 Z' fill='url(%23metalNacelle)' stroke='rgb(148,163,184)' stroke-width='1.5'/><polygon points='770,84 910,60 910,200 770,176' fill='\", if({view.custom.kpis[0].lpt_temp_s4} >= 1418.0, \"rgb(239,68,68)\", if({view.custom.kpis[0].lpt_temp_s4} >= 1408.0, \"rgb(245,158,11)\", \"rgb(56,189,248)\")), \"' opacity='0.26'><animate attributeName='opacity' values='0.15;0.38;0.15' dur='0.5s' repeatCount='indefinite'/></polygon><circle r='3.5' fill='rgb(56,189,248)'><animateMotion dur='1.4s' repeatCount='indefinite' path='M 20,76 Q 240,62 420,86'/></circle><circle r='3.5' fill='rgb(56,189,248)'><animateMotion dur='1.4s' begin='0.45s' repeatCount='indefinite' path='M 20,184 Q 240,198 420,174'/></circle><circle r='4' fill='rgb(251,191,36)'><animateMotion dur='0.9s' repeatCount='indefinite' path='M 280,92 L 540,98'/></circle><circle r='4' fill='rgb(239,68,68)'><animateMotion dur='0.65s' repeatCount='indefinite' path='M 460,96 L 895,78'/></circle><circle r='4' fill='rgb(239,68,68)'><animateMotion dur='0.65s' begin='0.3s' repeatCount='indefinite' path='M 460,164 L 895,182'/></circle><rect x='90' y='121' width='655' height='18' rx='4' fill='url(%23chromeShaft)' stroke='rgb(71,85,105)' stroke-width='1.5'/><line x1='100' y1='130' x2='735' y2='130' stroke='rgb(15,23,42)' stroke-width='3.5' stroke-dasharray='16,10'><animate attributeName='stroke-dashoffset' from='52' to='0' dur='0.4s' repeatCount='indefinite'/></line><polygon points='175,68 258,76 258,184 175,192' fill='\", if({view.custom.kpis[0].lpc_temp_s2} >= 643.4, \"rgb(127,29,29)\", if({view.custom.kpis[0].lpc_temp_s2} >= 642.8, \"rgb(120,53,15)\", \"rgb(15,118,110)\")), \"' stroke='\", if({view.custom.kpis[0].lpc_temp_s2} >= 643.4, \"rgb(248,113,113)\", if({view.custom.kpis[0].lpc_temp_s2} >= 642.8, \"rgb(251,191,36)\", \"rgb(45,212,191)\")), \"' stroke-width='2' opacity='0.9'/><line x1='198' y1='71' x2='198' y2='189' stroke='rgb(226,232,240)' stroke-width='3' stroke-dasharray='6,4'><animate attributeName='stroke-dashoffset' from='20' to='0' dur='0.45s' repeatCount='indefinite'/></line><line x1='232' y1='74' x2='232' y2='186' stroke='rgb(226,232,240)' stroke-width='3' stroke-dasharray='6,4'><animate attributeName='stroke-dashoffset' from='0' to='20' dur='0.45s' repeatCount='indefinite'/></line><polygon points='272,76 412,84 412,176 272,184' fill='\", if({view.custom.kpis[0].hpc_static_press_s11} >= 47.85, \"rgb(153,27,27)\", if({view.custom.kpis[0].hpc_static_press_s11} >= 47.55, \"rgb(146,64,14)\", \"rgb(6,95,70)\")), \"' stroke='\", if({view.custom.kpis[0].hpc_static_press_s11} >= 47.85, \"rgb(239,68,68)\", if({view.custom.kpis[0].hpc_static_press_s11} >= 47.55, \"rgb(245,158,11)\", \"rgb(16,185,129)\")), \"' stroke-width='2.5'/><line x1='298' y1='78' x2='298' y2='182' stroke='rgb(248,250,252)' stroke-width='3' stroke-dasharray='5,4'><animate attributeName='stroke-dashoffset' from='18' to='0' dur='0.3s' repeatCount='indefinite'/></line><line x1='338' y1='80' x2='338' y2='180' stroke='rgb(248,250,252)' stroke-width='3' stroke-dasharray='5,4'><animate attributeName='stroke-dashoffset' from='0' to='18' dur='0.3s' repeatCount='indefinite'/></line><line x1='378' y1='82' x2='378' y2='178' stroke='rgb(248,250,252)' stroke-width='3' stroke-dasharray='5,4'><animate attributeName='stroke-dashoffset' from='18' to='0' dur='0.3s' repeatCount='indefinite'/></line><rect x='426' y='80' width='118' height='100' rx='10' fill='rgb(30,41,59)' stroke='rgb(249,115,22)' stroke-width='2'/><ellipse cx='485' cy='100' rx='42' ry='13' fill='rgb(249,115,22)'><animate attributeName='rx' values='36;48;36' dur='0.4s' repeatCount='indefinite'/><animate attributeName='opacity' values='0.65;1;0.65' dur='0.4s' repeatCount='indefinite'/></ellipse><ellipse cx='485' cy='160' rx='42' ry='13' fill='rgb(249,115,22)'><animate attributeName='rx' values='36;48;36' dur='0.4s' repeatCount='indefinite'/><animate attributeName='opacity' values='0.65;1;0.65' dur='0.4s' repeatCount='indefinite'/></ellipse><polygon points='558,84 692,68 692,192 558,176' fill='\", if({view.custom.kpis[0].lpt_temp_s4} >= 1418.0, \"rgb(153,27,27)\", if({view.custom.kpis[0].lpt_temp_s4} >= 1408.0, \"rgb(146,64,14)\", \"rgb(6,95,70)\")), \"' stroke='\", if({view.custom.kpis[0].lpt_temp_s4} >= 1418.0, \"rgb(239,68,68)\", if({view.custom.kpis[0].lpt_temp_s4} >= 1408.0, \"rgb(245,158,11)\", \"rgb(16,185,129)\")), \"' stroke-width='2.5'/><line x1='590' y1='82' x2='590' y2='178' stroke='rgb(254,215,170)' stroke-width='3' stroke-dasharray='5,4'><animate attributeName='stroke-dashoffset' from='18' to='0' dur='0.3s' repeatCount='indefinite'/></line><line x1='632' y1='76' x2='632' y2='184' stroke='rgb(254,215,170)' stroke-width='3' stroke-dasharray='5,4'><animate attributeName='stroke-dashoffset' from='0' to='18' dur='0.3s' repeatCount='indefinite'/></line><line x1='672' y1='71' x2='672' y2='189' stroke='rgb(254,215,170)' stroke-width='3' stroke-dasharray='5,4'><animate attributeName='stroke-dashoffset' from='18' to='0' dur='0.3s' repeatCount='indefinite'/></line><polygon points='692,98 775,130 692,162' fill='url(%23metalNacelle)' stroke='rgb(148,163,184)' stroke-width='1.5'/><ellipse cx='115' cy='130' rx='26' ry='74' fill='rgb(15,23,42)' stroke='rgb(56,189,248)' stroke-width='2.5'/><g transform='translate(115,130)'><g><animateTransform attributeName='transform' type='rotate' from='0' to='360' dur='1.4s' repeatCount='indefinite'/><line x1='-20' y1='-62' x2='20' y2='62' stroke='rgb(56,189,248)' stroke-width='5.5' stroke-linecap='round'/><line x1='20' y1='-62' x2='-20' y2='62' stroke='rgb(56,189,248)' stroke-width='5.5' stroke-linecap='round'/><line x1='0' y1='-68' x2='0' y2='68' stroke='rgb(186,230,253)' stroke-width='4.5' stroke-linecap='round'/><line x1='-24' y1='0' x2='24' y2='0' stroke='rgb(186,230,253)' stroke-width='4.5' stroke-linecap='round'/></g></g><polygon points='48,130 104,108 104,152' fill='url(%23chromeShaft)' stroke='rgb(56,189,248)' stroke-width='1.5'/><line x1='340' y1='95' x2='340' y2='28' stroke='rgb(239,68,68)' stroke-width='1.5'/><circle cx='340' cy='95' r='5' fill='rgb(239,68,68)'><animate attributeName='r' values='4;9;4' dur='0.9s' repeatCount='indefinite'/></circle><rect x='255' y='6' width='185' height='24' rx='4' fill='rgb(15,23,42)' stroke='\", if({view.custom.kpis[0].hpc_static_press_s11} >= 47.85, \"rgb(239,68,68)\", \"rgb(16,185,129)\"), \"' stroke-width='1.5'/><text x='263' y='22' fill='rgb(248,250,252)' font-size='11' font-weight='bold'>★ HPC s11: \", numberFormat({view.custom.kpis[0].hpc_static_press_s11}, \"0.00\"), \" psia</text>\", \"<line x1='625' y1='95' x2='625' y2='28' stroke='rgb(249,115,22)' stroke-width='1.5'/><circle cx='625' cy='95' r='5' fill='rgb(249,115,22)'><animate attributeName='r' values='4;9;4' dur='0.9s' repeatCount='indefinite'/></circle><rect x='540' y='6' width='180' height='24' rx='4' fill='rgb(15,23,42)' stroke='\", if({view.custom.kpis[0].lpt_temp_s4} >= 1418.0, \"rgb(239,68,68)\", \"rgb(16,185,129)\"), \"' stroke-width='1.5'/><text x='548' y='22' fill='rgb(248,250,252)' font-size='11' font-weight='bold'>★ LPT s4: \", numberFormat({view.custom.kpis[0].lpt_temp_s4}, \"0.0\"), \" °R</text>\", \"<rect x='155' y='230' width='145' height='24' rx='4' fill='rgb(15,23,42)' stroke='rgb(45,212,191)' stroke-width='1'/><text x='163' y='246' fill='rgb(248,250,252)' font-size='11' font-weight='bold'>LPC s2: \", numberFormat({view.custom.kpis[0].lpc_temp_s2}, \"0.0\"), \" °R</text>\", \"<rect x='415' y='230' width='165' height='24' rx='4' fill='rgb(15,23,42)' stroke='rgb(249,115,22)' stroke-width='1'/><text x='423' y='246' fill='rgb(248,250,252)' font-size='11' font-weight='bold'>CORE s9: \", numberFormat({view.custom.kpis[0].core_speed_s9}, \"0.0\"), \" rpm</text>\", \"<text x='790' y='122' fill='rgb(248,250,252)' font-size='12' font-weight='bold'>CICLO: \", {view.custom.kpis[0].current_cycle}, \"</text>\", \"<text x='790' y='144' fill='\", if({view.custom.kpis[0].health_status} = \"Critico\", \"rgb(248,113,113)\", if({view.custom.kpis[0].health_status} = \"Alerta\", \"rgb(251,191,36)\", \"rgb(74,222,128)\")), \"' font-size='12' font-weight='bold'>\", upper({view.custom.kpis[0].health_status}), \"</text></svg>\")"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "fit": {
+                    "mode": "contain"
+                  },
+                  "style": {
+                    "width": "100%",
+                    "height": "100%",
+                    "borderRadius": "8px",
+                    "border": "1px solid #334155",
+                    "backgroundColor": "#090E1A"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "OptionB_WebGL_3D"
+                },
+                "type": "ia.display.iframe",
+                "position": {
+                  "basis": "52%",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.src": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "concat(\"http://localhost:8095/turbine3d.html#asset=\", {view.custom.selectedAsset}, \"&cycle=\", {view.custom.kpis[0].current_cycle}, \"&rul=\", numberFormat({view.custom.kpis[0].rul_cycles}, \"0.0\"), \"&s11=\", numberFormat({view.custom.kpis[0].hpc_static_press_s11}, \"0.00\"), \"&s4=\", numberFormat({view.custom.kpis[0].lpt_temp_s4}, \"0.0\"), \"&s2=\", numberFormat({view.custom.kpis[0].lpc_temp_s2}, \"0.0\"), \"&s8=\", numberFormat({view.custom.kpis[0].fan_speed_s8}, \"0.0\"), \"&s9=\", numberFormat({view.custom.kpis[0].core_speed_s9}, \"0.0\"), \"&status=\", {view.custom.kpis[0].health_status})"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "width": "100%",
+                    "height": "100%",
+                    "borderRadius": "8px",
+                    "border": "1px solid #38BDF8",
+                    "backgroundColor": "#090E1A"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "Main_Content_Row"
+        },
+        "type": "ia.container.flex",
+        "position": {
+          "basis": "520px",
+          "grow": 1
+        },
+        "props": {
+          "direction": "row",
+          "gap": "12px"
+        },
+        "children": [
+          {
+            "meta": {
+              "name": "AI_Diagnostics_Panel"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "25%",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "justify": "space-between",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "padding": "12px 14px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Gauge_Header"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "20px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "MEDIDOR DE VIDA ÚTIL (RUL GAUGE)",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.05em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Gauge_RUL"
+                },
+                "type": "ia.chart.simple-gauge",
+                "position": {
+                  "basis": "175px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "type": "property",
+                      "config": {
+                        "path": "view.custom.kpis[0].rul_cycles"
+                      }
+                    }
+                  },
+                  "props.arc.color": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "if({view.custom.kpis[0].rul_cycles} <= 25, '#EF4444', if({view.custom.kpis[0].rul_cycles} <= 60, '#F59E0B', '#10B981'))"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "minValue": 0,
+                  "maxValue": 125,
+                  "arc": {
+                    "width": 20,
+                    "backgroundColor": "#0F172A"
+                  },
+                  "label": {
+                    "size": 22,
+                    "color": "#F8FAFC",
+                    "units": " cic"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Lbl_Stress_Header"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "20px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "ÍNDICES DE ESTRÉS FÍSICO (TOP SENSORES IA)",
+                  "style": {
+                    "color": "#94A3B8",
+                    "fontSize": "11px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.05em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Bar_s11"
+                },
+                "type": "ia.container.flex",
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "props": {
+                  "direction": "column",
+                  "justify": "center",
+                  "style": {
+                    "gap": "3px",
+                    "marginBottom": "4px"
+                  }
+                },
+                "children": [
+                  {
+                    "meta": {
+                      "name": "Lbl_Bar"
+                    },
+                    "type": "ia.display.label",
+                    "position": {
+                      "basis": "18px"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "type": "expr",
+                          "config": {
+                            "expression": "concat(\"s11 Presión HPC (52% IA): \", numberFormat({view.custom.kpis[0].hpc_static_press_s11}, \"0.00\"), \" / 48.5 psia\")"
+                          }
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#CBD5E1",
+                        "fontSize": "11px",
+                        "fontWeight": "600"
+                      }
+                    }
+                  },
+                  {
+                    "meta": {
+                      "name": "Progress_Bar"
+                    },
+                    "type": "ia.display.progress",
+                    "position": {
+                      "basis": "15px"
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "type": "property",
+                          "config": {
+                            "path": "view.custom.kpis[0].hpc_static_press_s11"
+                          }
+                        }
+                      }
+                    },
+                    "props": {
+                      "min": 46.8,
+                      "max": 48.5,
+                      "bar": {
+                        "color": "#38BDF8"
+                      },
+                      "track": {
+                        "color": "#0F172A"
+                      },
+                      "style": {
+                        "borderRadius": "6px"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "Bar_s4"
+                },
+                "type": "ia.container.flex",
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "props": {
+                  "direction": "column",
+                  "justify": "center",
+                  "style": {
+                    "gap": "3px",
+                    "marginBottom": "4px"
+                  }
+                },
+                "children": [
+                  {
+                    "meta": {
+                      "name": "Lbl_Bar"
+                    },
+                    "type": "ia.display.label",
+                    "position": {
+                      "basis": "18px"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "type": "expr",
+                          "config": {
+                            "expression": "concat(\"s4 Temp. Salida LPT (10% IA): \", numberFormat({view.custom.kpis[0].lpt_temp_s4}, \"0.0\"), \" / 1440 °R\")"
+                          }
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#CBD5E1",
+                        "fontSize": "11px",
+                        "fontWeight": "600"
+                      }
+                    }
+                  },
+                  {
+                    "meta": {
+                      "name": "Progress_Bar"
+                    },
+                    "type": "ia.display.progress",
+                    "position": {
+                      "basis": "15px"
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "type": "property",
+                          "config": {
+                            "path": "view.custom.kpis[0].lpt_temp_s4"
+                          }
+                        }
+                      }
+                    },
+                    "props": {
+                      "min": 1385.0,
+                      "max": 1440.0,
+                      "bar": {
+                        "color": "#F97316"
+                      },
+                      "track": {
+                        "color": "#0F172A"
+                      },
+                      "style": {
+                        "borderRadius": "6px"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "Bar_s9"
+                },
+                "type": "ia.container.flex",
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "props": {
+                  "direction": "column",
+                  "justify": "center",
+                  "style": {
+                    "gap": "3px",
+                    "marginBottom": "4px"
+                  }
+                },
+                "children": [
+                  {
+                    "meta": {
+                      "name": "Lbl_Bar"
+                    },
+                    "type": "ia.display.label",
+                    "position": {
+                      "basis": "18px"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "type": "expr",
+                          "config": {
+                            "expression": "concat(\"s9 Velocidad Núcleo Nc (12% IA): \", numberFormat({view.custom.kpis[0].core_speed_s9}, \"0.0\"), \" / 9200 rpm\")"
+                          }
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#CBD5E1",
+                        "fontSize": "11px",
+                        "fontWeight": "600"
+                      }
+                    }
+                  },
+                  {
+                    "meta": {
+                      "name": "Progress_Bar"
+                    },
+                    "type": "ia.display.progress",
+                    "position": {
+                      "basis": "15px"
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "type": "property",
+                          "config": {
+                            "path": "view.custom.kpis[0].core_speed_s9"
+                          }
+                        }
+                      }
+                    },
+                    "props": {
+                      "min": 9020.0,
+                      "max": 9200.0,
+                      "bar": {
+                        "color": "#A855F7"
+                      },
+                      "track": {
+                        "color": "#0F172A"
+                      },
+                      "style": {
+                        "borderRadius": "6px"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Chart_Container"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "45%",
+              "grow": 2
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "padding": "12px 14px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Chart_Header"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "22px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "EVOLUCIÓN TÉRMICA HASTA EL CICLO SIMULADO (LPT s4 & HPC s3 [°R])",
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "12px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.04em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "TimeSeriesChart"
+                },
+                "type": "ia.chart.timeseries",
+                "position": {
+                  "basis": "450px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.series[0].data": {
+                    "binding": {
+                      "type": "query",
+                      "config": {
+                        "parameters": {
+                          "assetId": "{view.custom.selectedAsset}",
+                          "startCycle": "1",
+                          "endCycle": "{view.custom.simCycle}"
+                        },
+                        "queryPath": "CMAPSS/telemetry_trend"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "series": [
+                    {
+                      "name": "DegradacionTermica"
+                    }
+                  ],
+                  "style": {
+                    "backgroundColor": "#0F172A",
+                    "borderRadius": "8px",
+                    "padding": "8px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "Table_Container"
+            },
+            "type": "ia.container.flex",
+            "position": {
+              "basis": "30%",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#1E293B",
+                "borderRadius": "10px",
+                "border": "1px solid #334155",
+                "padding": "12px 14px",
+                "boxShadow": "0 4px 12px rgba(0, 0, 0, 0.25)"
+              }
+            },
+            "children": [
+              {
+                "meta": {
+                  "name": "Lbl_Table_Header"
+                },
+                "type": "ia.display.label",
+                "position": {
+                  "basis": "22px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "SNAPSHOT DE INSTRUMENTACIÓN (24 SEÑALES)",
+                  "style": {
+                    "color": "#F8FAFC",
+                    "fontSize": "12px",
+                    "fontWeight": "700",
+                    "letterSpacing": "0.04em"
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "Table"
+                },
+                "type": "ia.display.table",
+                "position": {
+                  "basis": "450px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "type": "query",
+                      "config": {
+                        "parameters": {
+                          "assetId": "{view.custom.selectedAsset}"
+                        },
+                        "queryPath": "CMAPSS/latest_sensors"
+                      }
+                    }
+                  }
+                },
+                "props": {
+                  "pager": {
+                    "bottom": false
+                  },
+                  "rows": {
+                    "striped": true
+                  },
+                  "style": {
+                    "backgroundColor": "#0F172A",
+                    "color": "#E2E8F0",
+                    "borderRadius": "8px",
+                    "fontSize": "12px"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
